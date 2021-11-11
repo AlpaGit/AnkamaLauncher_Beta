@@ -1,0 +1,9 @@
+---
+  globals:
+    VueComponent: true
+    Vue: true
+    remote: true
+    logger: true
+    SETTINGS_KEYS: true
+    mapSettingsAsComputed: true
+    i18n: true

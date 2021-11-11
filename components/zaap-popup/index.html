@@ -1,0 +1,95 @@
+<template>
+  <transition name="c-zaap-popup__transition">
+    <div class="c-zaap-popup" @click.self="close">
+      <div class="c-zaap-popup--box" :style="{ width, height }">
+        <slot></slot>
+        <button class="c-zaap-popup--close" @click="close">
+          <zaap-icon icon="close"></zaap-icon>
+        </button>
+      </div>
+    </div>
+  </transition>
+</template>
+
+<script>
+  VueComponent(this, 'zaapPopup', {
+    props: {
+      width: String,
+      height: String,
+    },
+    methods: {
+      close(e) {
+        if (e.type === 'keydown') {
+          if (e.which !== 27) {
+            return
+          }
+
+          e.stopPropagation()
+        }
+
+        this.$emit('close')
+      },
+    },
+    created() {
+      // Listen for escape keydown event to close the popup
+      window.addEventListener('keydown', this.close, false)
+    },
+    destroyed() {
+      window.removeEventListener('keydown', this.close, false)
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-popup {
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: var(--color-black-pearl-80);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 150ms;
+  }
+
+  .c-zaap-popup__transition-enter,
+  .c-zaap-popup__transition-leave-active {
+    opacity: 0;
+  }
+
+  .c-zaap-popup--box {
+    position: relative;
+    background-color: var(--color-black-pearl);
+    background-image: linear-gradient(-135deg, var(--color-bossanova-60) 20px, transparent 130px), var(--texture-noise);
+    width: 50%;
+    overflow: hidden;
+    box-shadow: var(--box-shadow-default);
+    border-radius: 5px;
+    transition: transform 300ms;
+  }
+
+  .c-zaap-popup__transition-enter .c-zaap-popup--box,
+  .c-zaap-popup__transition-leave-active .c-zaap-popup--box {
+    transform: scale(0.95);
+  }
+
+  .c-zaap-popup--close {
+    position: absolute;
+    top: 19px;
+    right: 19px;
+    width: 36px;
+    height: 38px;
+    padding: 9px 5px;
+  }
+
+  .c-zaap-popup--close svg * {
+    fill: var(--color-white);
+  }
+
+  .c-zaap-popup--close:hover svg * {
+    fill: var(--color-primary);
+  }
+</style>

@@ -1,0 +1,157 @@
+<template>
+  <div class="c-zaap-progress" :class="stateClass">
+    <div class="c-zaap-progress--bar" :style="progressBarStyle">
+    </div>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapProgress', {
+    props: {
+      value: {
+        type: Number,
+        validator: (value) => {
+          return value == null || (value >= 0 && value <= 100)
+        },
+      },
+      paused: Boolean,
+    },
+    computed: {
+      stateClass() {
+        return {
+          'c-zaap-progress__paused': this.paused,
+        }
+      },
+      progressBarStyle() {
+        // Smallest value is always visually 2%
+        // We recalculate width base on 98 other percents
+        return {
+          width: 2 + (this.value * 0.98) + '%',
+        }
+      },
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-progress {
+    position: relative;
+    width: 200px;
+    height: 6px;
+    border-radius: 4px;
+    margin-top: -15px;
+    margin-bottom: 15px;
+  }
+
+  /* Progress background */
+  .c-zaap-progress::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: var(--color-primary);
+    opacity: 0.6;
+    border-radius: 4px;
+  }
+
+  /* Pulse animation thought the complete bar */
+  .c-zaap-progress::after {
+    content: "";
+    display: block;
+    width: 15px;
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    background: var(--color-primary);
+    opacity: 0.5;
+    border-radius: 4px;
+    filter: blur(1px);
+  }
+
+  .c-zaap-progress:not(.c-zaap-progress__paused)::after {
+    animation: zaapProgressPulse 3s linear infinite;
+  }
+
+  .c-zaap-progress--bar {
+    position: relative;
+    width: 0;
+    max-width: 100%;
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 4px;
+    transition: width 500ms ease-in-out;
+  }
+
+  /* Inner glow of the progress bar */
+  .c-zaap-progress--bar::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    left: 2px;
+    background: var(--color-lighten-primary);
+    filter: brightness(200%) saturate(200%) blur(1px);
+    transition: opacity 150ms;
+  }
+
+  .c-zaap-progress__paused .c-zaap-progress--bar::before {
+    opacity: 0;
+  }
+
+  /* Blinking glow after the progress bar */
+  .c-zaap-progress--bar::after {
+    content: "";
+    display: block;
+    width: 3px;
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    left: calc(100% - 3px);
+    background: var(--color-primary);
+    opacity: 0;
+    filter: brightness(300%) saturate(300%) blur(2px);
+  }
+
+  .c-zaap-progress:not(.c-zaap-progress__paused) .c-zaap-progress--bar::after {
+    animation: zaapProgressBarBlink 2s ease-out infinite;
+  }
+
+  @keyframes zaapProgressPulse {
+    0%,
+    35% {
+      opacity: 0.5;
+      transform: translateX(0) scaleX(0);
+    }
+
+    40% {
+      transform: translateX(45px) scaleX(7);
+    }
+
+    5%,
+    45% {
+      opacity: 1;
+    }
+
+    50%,
+    100% {
+      opacity: 0.5;
+      transform: translateX(190px) scaleX(0);
+    }
+  }
+
+  @keyframes zaapProgressBarBlink {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    40%,
+    60% {
+      opacity: 1;
+    }
+  }
+</style>

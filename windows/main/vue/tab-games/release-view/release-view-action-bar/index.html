@@ -1,0 +1,434 @@
+<template>
+  <div class="m-release-view-action-bar">
+    <template v-if="release.isInstalled || release.isUpdateProcessRunning">
+      <!-- Should update -->
+      <zaap-button
+        v-if="!release.isUpdateProcessRunning && release.isUpdateAvailable"
+        type="filled"
+        @click="runUpdate"
+        :disabled="isAutoUpdating || isRunning">
+        {{ $t('releaseViewActionBar.update') }}
+      </zaap-button>
+
+      <!-- Updating -->
+      <template v-else-if="release.isUpdateProcessRunning">
+        <div class="m-release-view-action-bar--download-management">
+          <!-- Download state -->
+          <div class="m-release-view-action-bar--state">
+            <div v-if="repairProgress" class="m-release-view-action-bar--state-icon m-release-view-action-bar--state-repair">
+              <zaap-icon icon="repair"></zaap-icon>
+            </div>
+            <div v-else class="m-release-view-action-bar--state-percent">
+              {{ parseInt(progress) }}%
+            </div>
+            <div class="m-release-view-action-bar--state-subline">
+              <template v-if="isUpdateQueued && !isUpdatePausedByUser">
+                {{ $t('releaseViewActionBar.downloadPending') }}
+              </template>
+              <template v-else-if="isUpdatePaused">
+                {{ $t('releaseViewActionBar.downloadPaused') }}
+              </template>
+              <template v-else-if="repairProgress">
+                {{ $t('releaseViewActionBar.repairProgress') }}
+                <template v-if="repairProgress.filesTotal > 0">
+                  {{ repairProgress.filesProgress }}/{{ repairProgress.filesTotal }}
+                </template>
+                <template v-else>
+                  0/????
+                </template>
+              </template>
+              <template v-else>
+                {{ $t('releaseViewActionBar.downloadSpeed', { downloadSpeed }) }}
+              </template>
+            </div>
+          </div>
+
+          <!-- Install/update pause button (on state hover) -->
+          <div class="m-release-view-action-bar--actions">
+            <zaap-button v-if="isUpdateQueued && !isUpdatePausedByUser"
+                         type="filled" @click="setUpdateMaxPriority"
+                         :disabled="isAutoUpdating">
+              <zaap-icon icon="play"></zaap-icon>
+              {{ $t('releaseViewActionBar.launchDownload') }}
+            </zaap-button>
+            <zaap-button v-else-if="isUpdatePaused"
+                         type="filled" @click="resume"
+                         :disabled="isAutoUpdating">
+              <zaap-icon icon="play"></zaap-icon>
+              {{ $t('releaseViewActionBar.resume') }}
+            </zaap-button>
+            <template v-else-if="progress > 0">
+              <zaap-button type="filled"
+                           @click="pause"
+                           :disabled="isAutoUpdating">
+                <zaap-icon icon="pause"></zaap-icon>
+                {{ $t('releaseViewActionBar.pause') }}
+              </zaap-button>
+            </template>
+          </div>
+
+          <!-- Progress -->
+          <transition name="m-release-view-action-bar--progress__transition">
+            <div class="m-release-view-action-bar--progress" v-if="!isUpdatePaused && progress > 0">
+              <zaap-progress
+                :value="progress"
+                :paused="isUpdatePaused"
+                :progress-bar-color="info.style.lightenPrimaryColor" :finished-color="info.style.primaryColor">
+              </zaap-progress>
+            </div>
+          </transition>
+        </div>
+
+        <!-- Tooltip -->
+        <div class="m-release-view-action-bar--tooltip">
+          {{ $t('releaseViewActionBar.remainingSizeToDownload', { remainingSizeToDownload }) }} <br>
+        </div>
+      </template>
+
+      <!-- Up to date: play! -->
+      <zaap-button
+        v-else
+        type="filled"
+        :disabled="release.isMaxRunningInstances || release.isLaunching || release.isMoving || isAutoUpdating"
+        @click="play">
+        <template v-if="release.isLaunching">
+          {{ $t('releaseViewActionBar.launching') }}
+        </template>
+        <template v-else-if="release.isMaxRunningInstances">
+          {{ $t('releaseViewActionBar.playing') }}
+        </template>
+        <template v-else>
+          {{ $t('releaseViewActionBar.play') }}
+        </template>
+      </zaap-button>
+
+      <!-- Options -->
+      <div class="m-release-view-action-bar--options">
+        <zaap-button min-width="0" @click="showSettings" :disabled="isAutoUpdating">
+        <zaap-icon icon="gear"></zaap-icon>
+      </zaap-button>
+      </div>
+
+      <!-- Instances count -->
+      <div v-if="runningInstancesCount > 1" class="m-release-view-action-bar--running-instances">
+        {{ $t('releaseViewActionBar.runningInstances', { runningInstancesCount }) }} <br>
+      </div>
+    </template>
+
+    <!-- Install -->
+    <template v-else>
+      <zaap-button
+        @click="install"
+        type="filled">
+        {{ $t('releaseViewActionBar.install') }}
+      </zaap-button>
+    </template>
+  </div>
+</template>
+
+<script>
+  /* global ipcRenderer, remoteCommunication */
+  VueComponent(this, 'release-view-action-bar', {
+    props: [
+      'release',
+    ],
+    data: {
+      error: null,
+      errorCallback: null,
+    },
+    computed: {
+      language() {
+        return this.$store.state.settings[SETTINGS_KEYS.LANGUAGE]
+      },
+      progress() {
+        if (this.repairProgress && this.repairProgress.filesTotal > 0) {
+          return this.repairProgress.filesProgress / this.repairProgress.filesTotal * 100
+        }
+
+        return this.updateProgressPercent
+      },
+      updateProgressPercent() {
+        if (!this.release.currentUpdate || this.release.currentUpdate.currentAction === 'UpdateActionRepair') {
+          return 0
+        }
+
+        const downloadProgress = this.update.overallDownloadProgress
+
+        if (downloadProgress.totalSize <= 0) {
+          return 0
+        }
+
+        return downloadProgress.downloadedSize / downloadProgress.totalSize * 100
+      },
+      update() {
+        return this.release.currentUpdate
+      },
+      repairProgress() {
+        if (!this.release.currentUpdate || this.release.currentUpdate.currentAction !== 'UpdateActionRepair') {
+          return false
+        }
+
+        return this.update.repairProgress
+      },
+      remainingSizeToDownload() {
+        const downloadProgress = this.update.overallDownloadProgress
+        const remainingSize = downloadProgress.totalSize - downloadProgress.downloadedSize
+
+        return this.prettyBytes(remainingSize > 0 ? remainingSize : 0)
+      },
+      info() {
+        return this.release.information[this.language]
+      },
+      runningInstancesCount() {
+        return this.release.runningInstances.length
+      },
+      isRunning() {
+        return this.runningInstancesCount > 0
+      },
+      isUpdateQueued() {
+        if (!this.update) {
+          return false
+        }
+
+        return this.update.isQueued
+      },
+      isUpdatePaused() {
+        if (!this.update) {
+          return false
+        }
+
+        return this.update.isPaused
+      },
+      isUpdatePausedByUser() {
+        if (!this.update) {
+          return false
+        }
+
+        return this.update.isPaused && this.update.isPausedByUser
+      },
+      downloadSpeed() {
+        return this.prettyBytes(this.update.downloadSpeed)
+      },
+      isAutoUpdating() {
+        return this.$store.state.autoUpdater.isUpdating
+      },
+    },
+    methods: {
+      runUpdate() {
+        this.$store.dispatch('runReleaseUpdate', {
+          release: this.release,
+        })
+      },
+      pause() {
+        this.$store.dispatch('pauseReleaseUpdate', {
+          release: this.release,
+        })
+      },
+      setUpdateMaxPriority() {
+        this.$store.dispatch('setReleaseUpdateQueueIndex', {
+          release: this.release,
+          index: 0,
+        })
+      },
+      resume() {
+        this.$store.dispatch('resumeReleaseUpdate', {
+          release: this.release,
+        })
+      },
+      install() {
+        this.$store.dispatch('openReleaseInstallPopup')
+      },
+      play() {
+        this.$store.dispatch('startRelease', {
+          release: this.release,
+        })
+      },
+      showSettings() {
+        this.$store.dispatch('openReleaseSettingsPopup')
+      },
+      prettyBytes: require('./lib/prettyBytes'),
+      startErrorCallback(event, error) {
+        this.error = error
+        logger.error(error.message)
+      },
+    },
+    created() {
+      this.errorCallback = this.startErrorCallback.bind(this)
+      ipcRenderer.on(remoteCommunication.CHANNELS.RELEASE_START_ERROR, this.errorCallback)
+      ipcRenderer.on(remoteCommunication.CHANNELS.RELEASE_REPAIR_ERROR, this.errorCallback)
+      ipcRenderer.on(remoteCommunication.CHANNELS.RELEASE_UPDATE_ERROR, this.errorCallback)
+    },
+    beforeDestroy() {
+      ipcRenderer.removeListener(remoteCommunication.CHANNELS.RELEASE_START_ERROR, this.errorCallback)
+      ipcRenderer.removeListener(remoteCommunication.CHANNELS.RELEASE_REPAIR_ERROR, this.errorCallback)
+      ipcRenderer.removeListener(remoteCommunication.CHANNELS.RELEASE_UPDATE_ERROR, this.errorCallback)
+    },
+  })
+</script>
+
+<style>
+  .m-release-view-action-bar {
+    position: relative;
+    width: 268px;
+  }
+
+  .m-release-view-action-bar--download-management {
+    height: 72px;
+  }
+  .m-release-view-action-bar--state {
+    position: relative;
+    background: var(--color-primary);
+    height: 55px;
+    width: 200px;
+    padding: 7px;
+    text-align: center;
+    border-radius: 3px;
+    box-shadow: var(--box-shadow-default);
+    z-index: 1;
+  }
+  .m-release-view-action-bar--state-icon .c-zaap-icon {
+    display: block;
+    margin: 0 auto;
+    width: 24px !important;
+    height: 24px !important;
+    transform: scale(1.2) translateY(1px) !important;
+  }
+  .m-release-view-action-bar--state-icon .c-zaap-icon svg * {
+    fill: var(--color-white);
+  }
+  .m-release-view-action-bar--state-icon.m-release-view-action-bar--state-repair .c-zaap-icon {
+    animation: releaseViewActionBarStateRepair 2.5s infinite;
+  }
+  .m-release-view-action-bar--state-percent {
+    font-family: var(--font-family-dosis);
+    font-weight: var(--font-weight-dosis-semibold);
+    font-size: 28px;
+    line-height: 24px;
+    animation: releaseViewActionBarStatePercentSlideIn 300ms;
+  }
+  .m-release-view-action-bar--state-subline {
+    font-family: var(--font-family-dosis);
+    font-weight: var(--font-weight-dosis-semibold);
+    animation: releaseViewActionBarStateSublineSlideIn 300ms;
+  }
+
+  .m-release-view-action-bar--actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 55px;
+    width: 200px;
+    opacity: 0;
+    transition: opacity 150ms;
+    z-index: 1;
+  }
+  .m-release-view-action-bar--actions:hover {
+    opacity: 1;
+  }
+
+  .m-release-view-action-bar--progress .c-zaap-progress {
+    margin-top: 5px;
+  }
+
+  .m-release-view-action-bar--actions .c-zaap-button {
+    font-size: 14px !important;
+    text-transform: none !important;
+    padding: 6px !important;
+  }
+
+  .m-release-view-action-bar--actions .c-zaap-button .c-zaap-icon {
+    display: block;
+    margin: 0 auto -3px;
+    width: 24px !important;
+    height: 24px !important;
+    transform: scale(1.2) translateY(1px) !important;
+  }
+
+  .m-release-view-action-bar--progress__transition-enter-active,
+  .m-release-view-action-bar--progress__transition-leave-active {
+    transition: transform 300ms;
+  }
+  .m-release-view-action-bar--progress__transition-enter,
+  .m-release-view-action-bar--progress__transition-leave-to {
+    transform: translateY(-12px);
+  }
+
+  .m-release-view-action-bar--tooltip {
+    position: relative;
+    width: 200px;
+    margin-top: 5px;
+    padding: 15px;
+    font-family: var(--font-family-dosis);
+    font-weight: var(--font-weight-dosis-semibold);
+    background: var(--color-black);
+    border-radius: 4px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: transform 150ms, opacity 150ms;
+    pointer-events: none;
+  }
+  .m-release-view-action-bar--tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border: 7px solid transparent;
+    border-bottom-color: var(--color-black);
+  }
+  .m-release-view-action-bar--download-management:hover ~ .m-release-view-action-bar--tooltip {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .m-release-view-action-bar--options {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  .m-release-view-action-bar--running-instances {
+    position: absolute;
+    top: -25px;
+  }
+
+  @keyframes releaseViewActionBarStateRepair {
+    0%,
+    55% {
+      transform: scale(1.2) translateY(1px);
+    }
+    10%,
+    30%{
+      transform: scale(0.9) translateY(-2px) rotateZ(70deg);
+    }
+    20%,
+    40%{
+      transform: scale(0.9) translateY(4px) rotateZ(20deg);
+    }
+  }
+
+  @keyframes releaseViewActionBarStatePercentSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes releaseViewActionBarStateSublineSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

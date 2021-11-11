@@ -1,0 +1,164 @@
+<template>
+  <li class="m-release-entry" :class="classes" @click="showGame" :style="style">
+    <div class="m-release-entry--identity">
+      <img v-if="release.name === 'main'" :src="icon"
+           class="m-release-entry--icon" style="display: none;" onload="this.removeAttribute('style')"/>
+      <!-- onload + style is a little hack to force image to show -->
+      <span v-if="release.name !== 'main'" class="m-release-entry--icon-display-name">{{ info.displayName }}</span>
+      <span class="m-release-entry--name">{{ release.gameName + ' ' + info.displayName }}</span>
+    </div>
+    <span class="m-release-entry--progress-container">
+      <span class="m-release-entry--progress" v-if="release.isUpdateProcessRunning && !release.currentUpdate.isPaused">
+        <span class="m-release-entry--progress-bar" :style="progressBarStyle"></span>
+      </span>
+    </span>
+  </li>
+</template>
+<script>
+  VueComponent(this, 'release-entry', {
+    props: [
+      'release',
+      'active',
+    ],
+    computed: {
+      info() {
+        const language = this.$store.state.settings[SETTINGS_KEYS.LANGUAGE]
+        return this.release.information[language]
+      },
+      icon() {
+        return this.release.information.url + '/icon.png?v=' + this.release.information.version
+      },
+      classes() {
+        const isSingleReleaseOfTheGame = this.$store.state.games[this.release.gameUid].releases.length === 1
+        return {
+          'm-release-entry__active': this.active,
+          'm-release-entry__has-display-name': this.release.name !== 'main' && !isSingleReleaseOfTheGame,
+        }
+      },
+      style() {
+        if (!this.info.style) {
+          return {}
+        }
+
+        return {
+          '--color-primary': this.info.style.primaryColor,
+        }
+      },
+      progressBarStyle() {
+        if (!this.release.isUpdateProcessRunning || this.release.currentUpdate.isPaused) {
+          return null
+        }
+
+        const update = this.release.currentUpdate.overallDownloadProgress
+        const progress = update.downloadedSize / update.totalSize * 100
+
+        return {
+          width: `${progress}%`,
+          backgroundColor: this.info.style.lightenPrimaryColor,
+        }
+      },
+    },
+    methods: {
+      showGame() {
+        this.$store.dispatch('displayRelease', this.release)
+      },
+    },
+  })
+</script>
+<style>
+  .m-release-entry {
+    position: relative;
+    list-style: none;
+    padding: 6px 6px 0;
+    margin-bottom: 7px;
+    border-radius: 4px;
+    transition: background-color 150ms;
+  }
+
+  .m-release-entry:hover,
+  .m-release-entry.m-release-entry__active {
+    background-color: var(--color-white-20);
+  }
+
+  .m-release-entry--identity {
+    display: flex;
+  }
+
+  .m-release-entry--icon {
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    height: 44px;
+    width: 44px;
+  }
+
+  .m-release-entry__has-display-name::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: -7px;
+    width: 2px;
+    height: 95px;
+    background: var(--color-primary);
+  }
+
+  .m-release-entry--icon-display-name {
+    display: block;
+    width: 100%;
+    color: var(--color-white);
+    text-transform: uppercase;
+    line-height: 1;
+    font-size: 10px;
+    font-weight: var(--font-weight-dosis-bold);
+    font-family: var(--font-family-dosis);
+    padding: 5px 3px;
+    text-align: center;
+  }
+
+  .m-release-entry--name {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    font: var(--font-weight-dosis-semibold) var(--font-size-default) var(--font-family-dosis);
+    padding: 20px 25px;
+    border-radius: 4px;
+    margin: -6px 0 -3px 64px;
+    background-color: rgba(0, 0, 0, 0.9);
+    transform: translateX(-5px);
+    transition: transform 150ms;
+  }
+
+  .m-release-entry__has-display-name .m-release-entry--name {
+    margin-top: -18px;
+  }
+
+  .m-release-entry:hover .m-release-entry--name {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .m-release-entry--progress-container {
+    display: block;
+    width: calc(var(--aside-width) / 2);
+    height: 2px;
+    margin: 4px auto 0;
+    overflow: hidden;
+  }
+
+  .m-release-entry--progress {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--color-white-30);
+  }
+
+  .m-release-entry--progress-bar {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--color-primary);
+    transition: width 150ms;
+  }
+</style>

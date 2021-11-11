@@ -1,0 +1,22 @@
+<link rel="import" href="./release-install/index.html">
+<link rel="import" href="./release-list/index.html">
+<link rel="import" href="./release-settings/index.html">
+<link rel="import" href="./release-uninstall/index.html">
+<link rel="import" href="./release-view/index.html">
+
+<template>
+  <div class="m-tab-games">
+    <release-list></release-list>
+    <release-view></release-view>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'tab-games')
+</script>
+
+<style>
+  .m-tab-games {
+    display: flex;
+  }
+</style>

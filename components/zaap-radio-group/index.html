@@ -1,0 +1,27 @@
+<link rel="import" href="./zaap-radio/index.html">
+
+<template>
+  <div class="c-zaap-radio-group">
+    <slot></slot>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapRadioGroup', {
+    props: {
+      value: {},
+      disabled: Boolean,
+    },
+    watch: {
+      value(newValue) {
+        this.$emit('change', newValue)
+      },
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-radio-group {
+    margin: 0 0 15px;
+  }
+</style>

@@ -1,0 +1,158 @@
+<template>
+  <zaap-popup v-if="showPopup" @close="closeReleaseInstallPopup" width="650px" height="420px" class="m-release-install">
+    <div class="m-release-install--content">
+      <h1 class="m-release-install--game-name">
+        {{ release.fullName }}
+      </h1>
+      <h2 class="m-release-install--subtitle">
+        {{ $t('releaseInstall.install') }}
+      </h2>
+      <zaap-input type="path" :open-dialog-button-label="$t('releaseInstall.selectFolder')"
+                  v-model="installFolder"
+                  :path-suffix="release.folderName"
+                  :errored="!!error"
+                  :error-message="error ? $t(error.translationKey || error.message, error.translationParameters) : ''">
+        {{ $t('releaseInstall.chooseInstallFolder') }}
+      </zaap-input>
+      <div class="m-release-install--space">
+        {{ $t('releaseInstall.space.required') }} <strong>{{ prettyInstallRequiredSpace }}</strong> <br>
+        {{ $t('releaseInstall.space.free') }} <strong>{{ prettyFreeDiskSpace }}</strong>
+      </div>
+
+      <div class="m-release-install--buttons-bottom">
+        <zaap-button @click="closeReleaseInstallPopup" size="medium">
+          {{ $t('releaseInstall.cancelButton') }}
+        </zaap-button>
+        <zaap-button type="filled" @click="install" size="medium"
+                     :disabled="installFolder.length < 2 || !!error || release.isInstalling">
+          {{ $t('releaseInstall.installButton') }}
+        </zaap-button>
+      </div>
+    </div>
+  </zaap-popup>
+</template>
+<script>
+  /* global ipcRenderer, remoteCommunication */
+  VueComponent(this, 'release-install', {
+    data: {
+      installFolder: '',
+      freeDiskSpace: null,
+      installRequiredSpace: null,
+      error: null,
+      errorCallback: null,
+    },
+    computed: {
+      release() {
+        return this.$store.getters.displayedRelease
+      },
+      showPopup() {
+        return this.release && this.$store.state.display.showReleaseInstallPopup
+      },
+      info() {
+        const language = this.$store.state.settings[SETTINGS_KEYS.LANGUAGE]
+        return this.release.information[language]
+      },
+      prettyFreeDiskSpace() {
+        if (!this.freeDiskSpace) {
+          return null
+        }
+
+        return this.prettyBytes(this.freeDiskSpace)
+      },
+      prettyInstallRequiredSpace() {
+        if (!this.installRequiredSpace) {
+          return null
+        }
+
+        return this.prettyBytes(this.installRequiredSpace)
+      },
+    },
+    methods: {
+      install() {
+        this.$store.dispatch('installRelease', {
+          release: this.release,
+          installPath: this.installFolder,
+        })
+      },
+      installErrorCallback(event, error) {
+        this.error = error
+      },
+      closeReleaseInstallPopup() {
+        this.$store.dispatch('closeReleaseInstallPopup')
+      },
+      prettyBytes: require('./lib/prettyBytes'),
+    },
+    watch: {
+      showPopup(value) {
+        if (value !== true) {
+          return
+        }
+
+        const installInformation = ipcRenderer.sendSync(
+          remoteCommunication.CHANNELS.RELEASE_GET_INSTALL_INFORMATION,
+          this.release.gameUid,
+          this.release.name
+        )
+
+        if (installInformation.error) {
+          this.error = installInformation.error
+        } else {
+          this.installFolder = installInformation.suggestedPath
+          this.installRequiredSpace = installInformation.requiredSpace
+        }
+      },
+      installFolder() {
+        const disk = remote.require('lib/disk')
+        if (this.installFolder !== '') {
+          disk.getDriveInfo(this.installFolder)
+            .then((diskInfo) => {
+              this.freeDiskSpace = diskInfo.free
+              this.error = null
+            })
+            .catch((error) => {
+              this.error = error
+              logger.error(error.message)
+            })
+        }
+      },
+    },
+    created() {
+      this.errorCallback = this.installErrorCallback.bind(this)
+      ipcRenderer.on(remoteCommunication.CHANNELS.RELEASE_INSTALL_ERROR, this.errorCallback)
+    },
+    beforeDestroy() {
+      ipcRenderer.removeListener(remoteCommunication.CHANNELS.RELEASE_INSTALL_ERROR, this.errorCallback)
+    },
+  })
+</script>
+<style>
+  .m-release-install--content {
+    position: relative;
+    height: 100%;
+    padding: 50px;
+  }
+
+  .m-release-install--game-name {
+    font: var(--font-weight-dosis-bold) var(--font-size-default) var(--font-family-dosis);
+    color: var(--color-primary);
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .m-release-install--subtitle {
+    font: var(--font-title);
+    margin-bottom: 30px;
+  }
+
+  .m-release-install--space {
+    padding: 10px 0;
+    margin-bottom: 10px;
+  }
+
+  .m-release-install .m-release-install--buttons-bottom {
+    position: absolute;
+    right: 50px;
+    bottom: 30px;
+    text-align: right;
+  }
+</style>

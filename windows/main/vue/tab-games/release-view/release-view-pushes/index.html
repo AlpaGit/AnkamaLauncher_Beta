@@ -1,0 +1,158 @@
+<template>
+  <div class="m-release-pushes">
+    <a class="m-release-pushes--push" v-for="push in pushes" @click="openExternalPush(push)">
+      <div class="m-release-pushes--push-image" :style="{'background-image': 'url(' + push.imageUrl + ')'}"></div>
+      <div class="m-release-pushes--push-title-wrapper">
+        <div class="m-release-pushes--push-title">
+          {{ push.title }}
+        </div>
+      </div>
+    </a>
+  </div>
+</template>
+
+<script>
+  /* global ipcRenderer, remoteCommunication */
+  VueComponent(this, 'release-view-pushes', {
+    props: [
+      'release',
+    ],
+    computed: {
+      language() {
+        return this.$store.state.settings[SETTINGS_KEYS.LANGUAGE]
+      },
+      pushes() {
+        return this.$store.getters.displayedRelease.news
+      },
+    },
+    methods: {
+      refreshNews() {
+        if (this.release) {
+          this.$store.dispatch('refreshNews', this.release)
+        }
+      },
+      openExternalPush(push) {
+        this.$store.dispatch('openExternal', push.url)
+        ipcRenderer.send(remoteCommunication.CHANNELS.RELEASE_NEWS_CLICK, push.id, push.type)
+      },
+    },
+    watch: {
+      release() {
+        this.refreshNews()
+      },
+    },
+    mounted() {
+      this.refreshNews()
+    },
+  })
+</script>
+
+<style>
+  .m-release-pushes {
+    position: relative;
+    display: flex;
+    margin-top: 20px;
+    transform: translateZ(0); /* Force pushes to be on their own layer - Also force GPU usage */
+  }
+
+  .m-release-pushes--push {
+    position: relative;
+    width: calc((100% - 20px) / 3);
+    cursor: pointer;
+    color: var(--color-white);
+    background-color: var(--color-black-40);
+    transition: background-color 150ms, box-shadow 150ms, transform 150ms;
+  }
+
+  .m-release-pushes--push + .m-release-pushes--push {
+    margin-left: 10px;
+  }
+
+  .m-release-pushes--push:hover {
+    background-color: var(--color-black-60);
+    box-shadow: var(--box-shadow-default);
+  }
+
+  .m-release-pushes--push:active {
+    transform: scale(0.98);
+  }
+
+  .m-release-pushes--push:nth-child(1) {
+    animation: pushFadeIn1 1.3s ease-out;
+  }
+
+  .m-release-pushes--push:nth-child(2) {
+    animation: pushFadeIn2 1.3s ease-out;
+  }
+
+  .m-release-pushes--push:nth-child(3) {
+    animation: pushFadeIn3 1.3s ease-out;
+  }
+
+  .m-release-pushes--push-title-wrapper {
+    padding: 10px;
+  }
+
+  .m-release-pushes--push-title {
+    display: -webkit-box;
+    height: 33px;
+    font: var(--font-default);
+    text-shadow: var(--text-shadow-default);
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .m-release-pushes--push-image {
+    width: 100%;
+    padding-top: 55.3%;
+    background: var(--color-black-60) center center;
+    background-size: cover;
+    filter: saturate(100%);
+    transition: filter 150ms;
+  }
+
+  .m-release-pushes--push:hover .m-release-pushes--push-image {
+    filter: saturate(150%);
+  }
+
+  @keyframes pushFadeIn1 {
+    0%,
+    50% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    72%,
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pushFadeIn2 {
+    0%,
+    55% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    84%,
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pushFadeIn3 {
+    0%,
+    60% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    96%,
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

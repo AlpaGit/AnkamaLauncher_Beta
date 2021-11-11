@@ -1,0 +1,118 @@
+<template>
+  <div class="m-terms-overlay">
+    <div class="m-terms-overlay--background" :style="backgroundStyle"></div>
+    <img :src="component.path + '/images/logo-with-name.png'" alt="" class="m-terms-overlay--logo">
+
+    <div class="m-terms-overlay--container">
+      <h1 class="m-terms-overlay--title">
+        {{ $t('terms.title') }}
+      </h1>
+      <div class="m-terms-overlay--inner">
+        <terms></terms>
+      </div>
+      <div class="m-terms-overlay--buttons">
+        <zaap-button @click="acceptTerms" class="m-terms-overlay--accept-button" type="filled">
+          {{ $t('terms.accept') }}
+        </zaap-button>
+        <zaap-button @click="rejectTerms" class="m-terms-overlay--reject-button">
+          {{ $t('terms.reject') }}
+        </zaap-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'termsOverlay', {
+    computed: {
+      backgroundStyle() {
+        return {
+          backgroundImage: `url(${this.component.path}/images/background.jpg)`,
+        }
+      },
+    },
+    methods: {
+      acceptTerms() {
+        this.$store.dispatch('termsAccept')
+      },
+      rejectTerms() {
+        this.$store.dispatch('termsRefuse')
+      },
+    },
+  })
+</script>
+
+<style>
+  .m-terms-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 70px 80px 100px;
+  }
+
+  .m-terms-overlay--background {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    min-width: calc(110vh + 360px);
+    width: 100%;
+    background-size: auto calc(100%);
+    background-position: top left;
+    background-repeat: no-repeat;
+    pointer-events: none;
+  }
+
+  .m-terms-overlay--logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 80px;
+  }
+
+  .m-terms-overlay--title {
+    font: var(--font-title);
+  }
+
+  .m-terms-overlay--container {
+    position: absolute;
+    top: 75px;
+    right: 27%;
+    bottom: 120px;
+    transform: translateX(50%);
+    width: 50%;
+    max-width: 700px;
+  }
+
+  .m-terms-overlay--inner {
+    height: calc(100% - 70px);
+    overflow: auto;
+    padding: 0 20px 0 0;
+    margin: 0 auto 45px;
+  }
+
+  .m-terms-overlay--buttons .c-zaap-button--container {
+    min-width: 245px !important;
+  }
+
+  /* Custom scroll-bar */
+  .m-terms-overlay--inner::-webkit-scrollbar {
+    width: 10px;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .m-terms-overlay--inner::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .m-terms-overlay--inner::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .m-terms-overlay--inner::-webkit-scrollbar-thumb:active {
+    background: var(--color-white);
+  }
+</style>

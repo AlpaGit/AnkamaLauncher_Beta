@@ -1,0 +1,185 @@
+<link rel="import" href="./login/index.html">
+<link rel="import" href="./logbox/index.html">
+<link rel="import" href="./tab-games/index.html">
+<link rel="import" href="./terms/index.html">
+<link rel="import" href="./terms-overlay/index.html">
+<link rel="import" href="./window-controls/index.html">
+<link rel="import" href="./zaap-autoupdate/zaap-autoupdate-popup/index.html">
+<link rel="import" href="./zaap-autoupdate/zaap-autoupdate-progress/index.html">
+<link rel="import" href="./zaap-settings/index.html">
+
+<template>
+  <div id="app" class="m-app" :class="classes">
+    <window-controls v-if="!windowIsFullscreen"></window-controls>
+
+    <div class="m-app-container">
+      <terms-overlay v-if="needsToAcceptNewTerms"></terms-overlay>
+
+      <template v-else>
+        <login v-if="!isAuthenticated || isUserLoading"></login>
+        <template v-else>
+          <header class="m-app--header">
+            <div class="m-app--header-logo">
+              <img :src="component.path + '/logo.png'" alt="">
+              <zaap-autoupdate-progress></zaap-autoupdate-progress>
+            </div>
+
+            <ul class="m-app--menu">
+              <li @click="showTab('games')"
+                  class="m-app--menu-item" :class="{'m-app--menu-item__active': currentTab === 'games'}">
+                {{ $t('header.menu.games') }}
+              </li>
+            </ul>
+
+            <logbox></logbox>
+          </header>
+
+          <tab-games v-if="currentTab === 'games'"></tab-games>
+        </template>
+      </template>
+
+      <zaap-settings></zaap-settings>
+      <zaap-autoupdate-popup></zaap-autoupdate-popup>
+    </div>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'app', {
+    data: {
+      currentTab: 'games',
+    },
+    computed: {
+      isUserLoading() {
+        return this.$store.state.user.isLoading
+      },
+      isAuthenticated() {
+        return this.$store.state.auth.isAuthenticated
+      },
+      acceptedTermsVersion() {
+        return this.$store.state.settings[SETTINGS_KEYS.ACCEPTED_TERMS_VERSION]
+      },
+      needsToAcceptNewTerms() {
+        return this.$store.state.terms.needsToAcceptNewVersion
+      },
+      windowIsMaximized() {
+        return this.$store.state.window.isMaximized
+      },
+      windowIsFullscreen() {
+        return this.$store.state.window.isFullscreen
+      },
+      classes() {
+        return {
+          'm-app__darwin': process.platform === 'darwin',
+          'm-app__maximized': this.windowIsMaximized,
+          'm-app__fullscreen': this.windowIsFullscreen,
+        }
+      },
+    },
+    methods: {
+      showTab(tabName) {
+        this.currentTab = tabName
+      },
+    },
+    watch: {
+      acceptedTermsVersion() {
+        this.$store.dispatch('termsNeedsToAcceptNewVersion')
+      },
+    },
+  })
+</script>
+
+<style>
+  .m-app::before,
+  .m-app::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+    border: 1px solid var(--color-white);
+    opacity: 0.05;
+    transition: opacity 150ms;
+  }
+
+  .m-app::after {
+    border: 1px solid var(--color-white);
+  }
+
+  .m-app.m-app__darwin:not(.m-app__fullscreen)::before,
+  .m-app.m-app__darwin:not(.m-app__fullscreen)::after {
+    border-radius: 5px;
+  }
+
+  .m-app.m-app__maximized::before,
+  .m-app.m-app__maximized::after,
+  .m-app.m-app__fullscreen::before,
+  .m-app.m-app__fullscreen::after {
+    opacity: 0;
+  }
+
+  .m-app__not-allowed {
+    background: linear-gradient(to bottom right, #251426, #151a2d);
+  }
+
+  .m-app-container {
+    position: relative;
+    height: calc(100% - var(--m-window-controls-height));
+    transform: translateZ(0);
+  }
+
+  .m-app.m-app__fullscreen .m-app-container {
+    height: 100%;
+  }
+
+  .m-app--not-allowed {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    color: var(--color-white);
+    padding: 100px;
+    background: rgba(0, 0, 0, 0.3);
+    text-align: center;
+    transform: translate(-50%, -50%);
+  }
+
+  .m-app--not-allowed-title {
+    font: var(--font-title);
+  }
+
+  .m-app--header {
+    position: relative;
+    display: flex;
+    height: var(--header-height);
+    background: var(--color-black-60);
+    z-index: 1;
+  }
+
+  .m-app--header-logo {
+    position: relative;
+    width: var(--aside-width);
+    text-align: center;
+    padding: 5px 0;
+  }
+
+  .m-app--header-logo img {
+    width: 40px;
+  }
+
+  .m-app--menu {
+    font: var(--font-weight-dosis-semibold) var(--font-size-subtitle) var(--font-family-dosis);
+    line-height: var(--header-height);
+    margin: 0 25px;
+  }
+
+  .m-app--menu-item {
+    display: inline-block;
+    padding: 0 15px;
+  }
+</style>

@@ -1,0 +1,138 @@
+<template>
+  <zaap-popup v-if="show" @close="closeSettings" width="700px" height="480px"
+              class="m-zaap-settings">
+    <zaap-tabs :title="$t('zaapSettings.title')" :logo-path="component.path + '/../logo.png'">
+      <zaap-tab :title="$t('zaapSettings.tabs.general.title')">
+        <div class="form-group">
+          <span class="form-group--title">{{ $t('zaapSettings.tabs.general.language') }}</span>
+          <zaap-select v-model="language">
+            <zaap-option v-for="supportedLanguage in supportedLanguages" :value="supportedLanguage"
+                         :key="supportedLanguage">
+              {{ languageLabels[supportedLanguage] || supportedLanguage }}
+            </zaap-option>
+          </zaap-select>
+
+          <zaap-checkbox v-model="autoLaunch">{{ $t('zaapSettings.tabs.general.launchAtStartup') }}</zaap-checkbox>
+          <zaap-checkbox v-model="minimizeAtReleaseLaunch">{{ $t('zaapSettings.tabs.general.minimizeAtReleaseLaunch') }}</zaap-checkbox>
+          <zaap-checkbox v-if="isAnkamaUser" v-model="preRelease">{{ $t('zaapSettings.tabs.general.preRelease') }}</zaap-checkbox>
+        </div>
+
+        <div class="form-group">
+          <span class="form-group--title">{{ $t('zaapSettings.tabs.general.atClose.title') }}</span>
+          <zaap-radio-group v-model="atClose">
+            <zaap-radio value="tray">{{ $t('zaapSettings.tabs.general.atClose.tray') }}</zaap-radio>
+            <zaap-radio value="quit">{{ $t('zaapSettings.tabs.general.atClose.quit') }}</zaap-radio>
+          </zaap-radio-group>
+        </div>
+
+        <div class="form-group" v-if="!isDarwin">
+          <span class="form-group--title">{{ $t('zaapSettings.tabs.general.atMinimize.title') }}</span>
+          <zaap-radio-group v-model="atMinimize">
+            <zaap-radio value="taskbar">{{ $t('zaapSettings.tabs.general.atMinimize.taskbar') }}</zaap-radio>
+            <zaap-radio value="tray">{{ $t('zaapSettings.tabs.general.atMinimize.tray') }}</zaap-radio>
+          </zaap-radio-group>
+        </div>
+      </zaap-tab>
+
+      <zaap-tab :title="$t('zaapSettings.tabs.terms.title')">
+        <terms></terms>
+      </zaap-tab>
+
+      <zaap-tab :title="$t('zaapSettings.tabs.logs.title')">
+        <zaap-button @click="openLogsFolder" type="filled" size="medium">
+          {{ $t('zaapSettings.tabs.logs.open') }}
+        </zaap-button>
+      </zaap-tab>
+    </zaap-tabs>
+
+    <div class="m-zaap-settings--version">
+      {{ $t('zaapSettings.tabs.about.version') }} <br>
+      {{ versionWithoutBuild }}
+      <div v-if="versionBuild" class="m-zaap-settings--version-build">
+        Build <br>
+        {{ versionBuild }}
+      </div>
+    </div>
+  </zaap-popup>
+</template>
+<script>
+  /* global ipcRenderer, remoteCommunication */
+  VueComponent(this, 'zaap-settings', {
+    data: {
+      languageLabels: {
+        de: 'Deutsch',
+        es: 'Español',
+        en: 'English',
+        fr: 'Français',
+        it: 'Italiano',
+        pt: 'Português',
+      },
+    },
+    computed: Object.assign({
+      isDarwin() {
+        return process.platform === 'darwin' || process.env.SIMULATE_DARWIN
+      },
+      isAnkamaUser() {
+        const settings = this.$store.state.settings
+        return settings.hasOwnProperty(SETTINGS_KEYS.USER_INFO) && settings[SETTINGS_KEYS.USER_INFO].isAnkamaUser
+      },
+      supportedLanguages() {
+        return remote.require('lib/settings').supportedLanguages
+      },
+      show() {
+        return this.$store.state.display.showZaapSettingsPopup
+      },
+      version() {
+        return remote.require('lib/app').getVersion()
+      },
+      versionWithoutBuild() {
+        return this.version.split('-')[0]
+      },
+      versionBuild() {
+        const versionParts = this.version.split('-')
+        if (versionParts.length === 1 || !versionParts[1].includes('.')) {
+          return null
+        }
+
+        const build = versionParts[1].split('.')[1]
+        return `${build.substring(6, 8)}/${build.substring(4, 6)}/${build.substring(0, 4)}
+                ${build.substring(8, 10)}:${build.substring(10, 12)}:${build.substring(12, 14)}`
+      },
+    }, mapSettingsAsComputed({
+      language: SETTINGS_KEYS.LANGUAGE,
+      autoLaunch: SETTINGS_KEYS.AUTO_LAUNCH,
+      minimizeAtReleaseLaunch: SETTINGS_KEYS.MINIMIZE_AT_RELEASE_LAUNCH,
+      atClose: SETTINGS_KEYS.AT_CLOSE,
+      atMinimize: SETTINGS_KEYS.AT_MINIMIZE,
+      preRelease: SETTINGS_KEYS.PRE_RELEASE,
+    })),
+    methods: {
+      closeSettings() {
+        this.$store.dispatch('closeZaapSettingsPopup')
+      },
+      openLogsFolder() {
+        const shell = require('electron').shell
+        shell.openItem(
+          ipcRenderer.sendSync(remoteCommunication.CHANNELS.LOGGER_GET_LOGS_PATH)
+        )
+      },
+    },
+  })
+</script>
+<style>
+  .m-zaap-settings--version {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 120px;
+    text-align: center;
+    padding: 20px 10px;
+    opacity: 0.3;
+    font: var(--font-weight-dosis-semibold) var(--font-size-default) var(--font-family-dosis)
+  }
+
+  .m-zaap-settings--version-build {
+    padding-top: 15px;
+    font-size: 11px;
+  }
+</style>

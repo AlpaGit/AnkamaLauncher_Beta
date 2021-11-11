@@ -1,0 +1,131 @@
+<template>
+  <!-- This outer div avoid elements on the right of the checkbox -->
+  <div>
+    <label class="c-zaap-checkbox" :class="{ 'c-zaap-checkbox__disabled': disabled }" @mouseup="blur">
+      <input type="checkbox" v-model="localChecked" :disabled="disabled" :value="value"
+             class="c-zaap-checkbox--input">
+      <span class="c-zaap-checkbox--checkbox"></span>
+      <slot></slot>
+    </label>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapCheckbox', {
+    model: {
+      prop: 'checked',
+      event: 'change',
+    },
+    props: {
+      value: {},
+      checked: {},
+      disabled: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    methods: {
+      blur() {
+        setTimeout(() => {
+          this.$el.querySelector('input').blur()
+        })
+      },
+    },
+    data() {
+      return {
+        localChecked: null,
+      }
+    },
+    watch: {
+      checked(newChecked) {
+        this.localChecked = newChecked
+      },
+      localChecked(newLocalChecked) {
+        this.$emit('change', newLocalChecked)
+      },
+    },
+    mounted() {
+      this.localChecked = this.checked
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-checkbox {
+    --c-zaap-checkbox--translate-y: 5px;
+  }
+
+  .c-zaap-checkbox.c-zaap-checkbox__disabled {
+    opacity: 0.2;
+  }
+
+  .c-zaap-checkbox {
+    position: relative;
+    display: inline-block;
+    margin: 0 0 12px;
+    font: var(--font-label);
+  }
+
+  .c-zaap-checkbox--input {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    height: 0;
+    width: 0;
+    opacity: 0;
+  }
+
+  .c-zaap-checkbox--checkbox {
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    border: 1px solid transparent;
+    background-color: var(--color-black-60);
+    margin: 0 10px 0 1px;
+    border-radius: 3px;
+    transform: translateY(var(--c-zaap-checkbox--translate-y));
+    transition: background-color 150ms, border-color 150ms;
+  }
+
+  .c-zaap-checkbox--checkbox::before,
+  .c-zaap-checkbox--checkbox::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 9px;
+    left: 3px;
+    background: var(--color-white);
+    height: 3px;
+    width: 6px;
+    transform: rotate(45deg);
+    opacity: 0;
+    filter: var(--drop-shadow-default);
+    transition: opacity 150ms;
+  }
+  .c-zaap-checkbox--checkbox::after {
+    width: 11px;
+    transform: rotate(-45deg) translate(2px, 1px);
+  }
+
+  .c-zaap-checkbox:not(.c-zaap-checkbox__disabled):hover .c-zaap-checkbox--input:not(:checked) + .c-zaap-checkbox--checkbox,
+  .c-zaap-checkbox:not(.c-zaap-checkbox__disabled) .c-zaap-checkbox--input:not(:checked):focus + .c-zaap-checkbox--checkbox {
+    border-color: var(--color-white-50);
+  }
+
+  .c-zaap-checkbox:not(.c-zaap-checkbox__disabled):active .c-zaap-checkbox--checkbox {
+    transform: translateY(var(--c-zaap-checkbox--translate-y)) scale(0.9);
+  }
+
+  .c-zaap-checkbox--input:checked + .c-zaap-checkbox--checkbox {
+    background-color: var(--color-primary);
+  }
+
+  .c-zaap-checkbox--input:checked + .c-zaap-checkbox--checkbox::before,
+  .c-zaap-checkbox--input:checked + .c-zaap-checkbox--checkbox::after {
+    opacity: 1;
+  }
+
+  .c-zaap-checkbox:not(.c-zaap-checkbox__disabled):hover .c-zaap-checkbox--input:checked + .c-zaap-checkbox--checkbox {
+    background-color: var(--color-lighten-primary);
+  }
+</style>

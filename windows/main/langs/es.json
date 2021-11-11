@@ -1,0 +1,179 @@
+﻿{
+  "zaapAutoUpdate": {
+    "updateRequired": "Actualización necesaria",
+    "willRestartAutomatically": "Ankama Launcher se reiniciará automáticamente para instalar la actualización.",
+    "restartIn": "Reiniciando en {countdown} segundos...",
+    "restartNow": "Reiniciar",
+    "restarting": "Reiniciando..."
+  },
+  "zaapSettings": {
+    "title": "Parámetros",
+    "tabs": {
+      "general": {
+        "title": "Opciones generales",
+        "language": "Lengua",
+        "launchAtStartup": "Iniciar Ankama Launcher al reiniciar el ordenador",
+        "preRelease": "Modo prelanzamiento",
+        "atClose": {
+          "title": "Al cerrar Ankama Launcher",
+          "tray": "Minimizar en la zona de notificación",
+          "quit": "Abandonar"
+        },
+        "atMinimize": {
+          "title": "Al minimizarAnkama Launcher",
+          "taskbar": "Minimizar en la barra de tareas",
+          "tray": "Minimizar en la zona de notificación"
+        }
+      },
+      "about": {
+        "title": "Acerca de",
+        "version": "Versión"
+      },
+      "terms": {
+        "title": "Condiciones de uso"
+      },
+      "logs": {
+        "title": "Logs",
+        "open": "Abrir el directorio de logs"
+      }
+    }
+  },
+  "header": {
+    "menu": {
+      "games": "Juegos"
+    }
+  },
+  "logbox": {
+    "offline": "Desconectado",
+    "account": "Mi cuenta",
+    "help": "Soporte",
+    "logout": "Desconexión"
+  },
+  "release": {
+    "error": {
+      "cannotInstallInANonEmptyFolder": "La carpeta seleccionada no está vacía.",
+      "cannotInstallReadWritePermissions": "No tienes derechos de lectura ni escritura en esta carpeta.",
+      "cannotInstallNotEnoughSpace": "No hay espacio libre suficiente.",
+      "cannotCreateDestinationFolder": "No es posible crear la carpeta.",
+      "cannotMoveNotInstalled": "El juego no se ha instalado aún, por favor, espera antes de moverlo.",
+      "cannotMoveWhileMoving": "El juego ya se está moviendo.",
+      "cannotMoveSameFolder": "El directorio seleccionado es el mismo que el directorio actual.",
+      "cannotMoveReadWritePermissions": "No tienes derechos de lectura ni escritura en esta carpeta.",
+      "cannotMoveWhileUpdating": "El juego se está actualizando.",
+      "cannotMoveWhileRunning": "Se ha lanzado el juego.",
+      "cannotMoveNotEnoughSpace": "No hay suficiente espacio libre.",
+      "cannotUpdateNoLocation": "El destino no se ha especificado.",
+      "cannotUpdateOffline": "Tu ordenador no está conectado a Internet.",
+      "cannotUpdateGameIsRunning": "Una instancia del juego se está ejecutando.",
+      "cannotUpdateAlreadyRunning": "El juego se está actualizando.",
+      "cannotUpdateReleaseIsMoving": "El juego se está moviendo.",
+      "cannotStartNotInstalled": "El juego no está instalado.",
+      "cannotStartWhileUpdating": "El juego se está actualizando.",
+      "cannotStartUpdateAvailable": "Hay una actualización disponible.",
+      "cannotStartMaxInstancesReached": "Se está ejecutando el máximo de instancias del juego posible.",
+      "cannotStartReleaseIsMoving": "El juego se está moviendo.",
+      "cannotUpdateCytrusVersionNotHandled": "Game's deployed version is not handled by this Ankama Launcher's version"
+    }
+  },
+  "releaseSettings": {
+    "title": "{releaseName} Configuración",
+    "tabs": {
+      "general": {
+        "title": "Opciones generales",
+        "repairTitle": "Reparación",
+        "repairExplanation": "Si el juego no funciona correctamente, puedes iniciar una reparación para tratar de resolver los problemas, verificando la totalidad de los archivos del juego presentes en tu ordenador.",
+        "repair": "Reparar",
+        "toolsTitle": "Herramientas",
+        "toolsExplanation": "Acceder a la carpeta del juego o a la de los logs. Añade los archivos de logs a tus informes de bugs.",
+        "openLogs": "Ver los logs",
+        "openReleaseFolder": "Abrir la carpeta del juego",
+        "uninstallTitle": "Desinstalación",
+        "uninstallExplanation": "Elimina la carpeta de instalación y los atajos del juego.",
+        "uninstall": "Desinstalar {fullGameName}"
+      },
+      "move": {
+        "title": "Cambiar de directorio",
+        "moveButton": "Mover"
+      },
+      "licenses": {
+        "title": "Licencias"
+      }
+    }
+  },
+  "releaseInstall": {
+    "install": "Instalación",
+    "chooseInstallFolder": "Directorio de instalación del juego",
+    "selectFolder": "Elegir esta carpeta",
+    "space": {
+      "required": "Espacio necesario:",
+      "free": "Espacio libre:"
+    },
+    "cancelButton": "Cancelar",
+    "installButton": "Instalar"
+  },
+  "releaseUninstall": {
+    "uninstalling": "Desinstalación",
+    "sentence": "¿Seguro que quieres desinstalar {releaseName}?",
+    "cancelButton": "Cancelar",
+    "uninstallButton": "Desinstalar"
+  },
+  "releaseView": {
+    "version": "Versión {version}"
+  },
+  "releaseViewActionBar": {
+    "options": "Opciones",
+    "update": "Actualizar",
+    "play": "Jugar",
+    "launching": "Iniciando...",
+    "playing": "En proceso...",
+    "downloadPending": "Descarga en espera",
+    "downloadPaused": "Descarga en pausa",
+    "downloadSpeed": "Descarga: {downloadSpeed}/s",
+    "repairProgress": "Análisis de archivos:",
+    "launchDownload": "Iniciar la descarga",
+    "resume": "Retomar la descarga",
+    "pause": "Poner en pausa",
+    "install": "Instalar",
+    "runningInstances": "{runningInstancesCount} instancias en proceso...",
+    "remainingSizeToDownload": "{remainingSizeToDownload} queda por descargar"
+  },
+  "terms": {
+    "title": "Condiciones generales de uso",
+    "accept": "Aceptar",
+    "reject": "Rechazar"
+  },
+  "login": {
+    "title": "Conéctate con",
+    "subtitle": "tu cuenta Ankama",
+    "login": "Nombre de cuenta",
+    "password": "Contraseña",
+    "stayLoggedIn": "No cerrar sesión",
+    "signIn": "Conectarse",
+    "cannotSignIn": "¿Conexión imposible?",
+    "signUp": "Inscribirte",
+    "support": "Ir al soporte"
+  },
+  "haapi": {
+    "error": {
+      "generic": "Ha ocurrido un error durante la autentificación.",
+      "ban": "Cuenta baneada",
+      "blacklist": "La IP utilizada está en la lista negra.",
+      "locked": "La cuenta está bloqueada.",
+      "deleted": "La cuenta se ha eliminado.",
+      "resetAnkama": "Es necesario reiniciar la cuenta en la página de gestión de cuenta.",
+      "otpTimeFailed": "Debes desbloquear tu cuenta mediante Ankama Authenticator.",
+      "securityCard": "La cuenta necesita una tarjeta de seguridad.",
+      "bruteForce": "Tu IP se ha añadido a una lista negra por haber sobrepasado el número de intentos autorizados.",
+      "failed": "Identificación incorrecta",
+      "partner": "La cuenta no está autorizada debido a una limitación de un colaborador.",
+      "invalidEmail": "Debes validar tu dirección de e-mail en la gestión de cuenta.",
+      "notFound": "No se encuentra la cuenta."
+    }
+  },
+  "disk": {
+    "error": {
+      "unableToGetDriveInfo": "No es posible obtener la información del disco.",
+      "invalidPath": "Ruta no válida"
+    }
+  }
+}

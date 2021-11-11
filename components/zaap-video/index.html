@@ -1,0 +1,221 @@
+<template>
+  <div class="c-zaap-video" :class="classes">
+    <div class="c-zaap-video--loading">
+      <div class="c-zaap-video--loading-square c-zaap-video--loading-square1"></div>
+      <div class="c-zaap-video--loading-square c-zaap-video--loading-square2"></div>
+      <div class="c-zaap-video--loading-square c-zaap-video--loading-square3"></div>
+      <div class="c-zaap-video--loading-square c-zaap-video--loading-square4"></div>
+    </div>
+    <div ref="plyrElement"></div>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapVideo', {
+    props: ['video'],
+    data: {
+      isReady: false,
+      player: null,
+    },
+    computed: {
+      classes() {
+        return {
+          'c-zaap-video__ready': this.isReady,
+        }
+      },
+    },
+    methods: {
+      setup() {
+        const plyr = require('plyr')
+
+        // Build player div
+        const playerDiv = document.createElement('div')
+        playerDiv.setAttribute('data-type', this.video.type)
+        playerDiv.setAttribute('data-video-id', this.video.src)
+
+        // Insert player div
+        this.$refs.plyrElement.appendChild(playerDiv)
+
+        // Setup player
+        this.player = plyr.setup(playerDiv)[0]
+        this.player.on('ready', () => {
+          const iframeDocument = this.$el.querySelector('iframe').contentDocument
+          const styleTag = iframeDocument.createElement('style')
+          const customCss = `
+            .ytp-watermark,
+            .ytp-cued-thumbnail-overlay-duration,
+            .ytp-button {display: none !important;}
+            * {pointer-events: none;}
+          `
+          styleTag.appendChild(iframeDocument.createTextNode(customCss))
+          iframeDocument.head.appendChild(styleTag)
+          Vue.nextTick(() => {
+            this.isReady = true
+          })
+        })
+      },
+    },
+    destroyed() {
+      this.isReady = false
+    },
+    mounted() {
+      this.setup()
+    },
+    watch: {
+      video() {
+        try {
+          this.player.destroy()
+        } catch (err) {
+        }
+
+        this.$refs.plyrElement.innerHTML = ''
+        this.isReady = false
+
+        this.setup()
+      },
+    },
+  })
+</script>
+
+<style>
+  /* Import Plyr style */
+  @import url("../../node_modules/plyr/dist/plyr.css");
+
+  .c-zaap-video .plyr * {
+    font-family: 'Raleway', sans-serif;
+    cursor: default !important;
+    pointer-events: all !important;
+  }
+
+  .c-zaap-video .plyr:not(.plyr--fullscreen-active) {
+    max-height: 90vh;
+  }
+
+  .c-zaap-video .plyr__progress--played,
+  .c-zaap-video .plyr__volume--display {
+    color: var(--color-primary);
+  }
+
+  .c-zaap-video .plyr--video .plyr__controls button.tab-focus:focus,
+  .c-zaap-video .plyr--video .plyr__controls button:hover,
+  .c-zaap-video .plyr input[type='range']:active::-webkit-slider-thumb {
+    background: var(--color-primary);
+  }
+
+  .c-zaap-video .plyr__play-large {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-width: 10px;
+    box-shadow: var(--color-black-60) 0 0 15px, inset var(--color-black-60) 0 0 15px;
+    transition: transform 150ms, background 150ms;
+  }
+
+  .c-zaap-video .plyr__play-large:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  .c-zaap-video .plyr__play-large:focus {
+    outline: none;
+  }
+
+  .c-zaap-video .plyr__play-large svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .c-zaap-video .plyr__play-large svg path {
+    box-shadow: var(--color-black-pearl) 0 0 25px;
+  }
+
+  /* Component style */
+  .c-zaap-video {
+    position: relative;
+    background-color: #000;
+    width: 100%;
+    overflow: hidden;
+    transition: transform 300ms;
+  }
+
+  .c-zaap-video .plyr {
+    opacity: 0;
+    transition: opacity 1s;
+  }
+
+  .c-zaap-video.c-zaap-video__ready .plyr {
+    opacity: 1;
+  }
+
+  .c-zaap-video--loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    opacity: 0.8;
+    transform: translate(-50%, -50%);
+  }
+
+  .c-zaap-video--loading-square {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: var(--color-white);
+    transform: rotate(45deg);
+    transition: opacity 150ms;
+  }
+
+  .c-zaap-video--loading-square1,
+  .c-zaap-video--loading-square3 {
+    margin-right: 5px;
+  }
+
+  .c-zaap-video--loading-square1 {
+    animation: loadingSquare 1s ease infinite;
+  }
+
+  .c-zaap-video--loading-square2 {
+    margin-right: 15px;
+    animation: loadingSquare 1s ease infinite 250ms;
+  }
+
+  .c-zaap-video--loading-square3 {
+    animation: loadingSquare 1s ease infinite 500ms;
+  }
+
+  .c-zaap-video--loading-square4 {
+    animation: loadingSquare 1s ease infinite 750ms;
+  }
+
+  .c-zaap-video.c-zaap-video__ready .c-zaap-video--loading-square {
+    opacity: 0;
+  }
+
+  .c-zaap-video--close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    padding: 7px 4px;
+    border-radius: 3px;
+    transition: background 150ms;
+  }
+
+  .c-zaap-video--close svg * {
+    fill: var(--color-white);
+  }
+
+  .c-zaap-video--close:hover {
+    background: var(--color-primary);
+  }
+
+  @keyframes loadingSquare {
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+</style>

@@ -1,0 +1,179 @@
+﻿{
+  "zaapAutoUpdate": {
+    "updateRequired": "Update erforderlich",
+    "willRestartAutomatically": "Ankama Launcher wird automatisch neu gestartet, um das Update zu installieren.",
+    "restartIn": "Neustart in {countdown} Sekunden …",
+    "restartNow": "Jetzt neu starten",
+    "restarting": "Neustart …"
+  },
+  "zaapSettings": {
+    "title": "Einstellungen",
+    "tabs": {
+      "general": {
+        "title": "Allgemeine Optionen",
+        "language": "Sprache",
+        "launchAtStartup": "Ankama Launcher beim Hochfahren des Computers starten",
+        "preRelease": "Vorabversion",
+        "atClose": {
+          "title": "Beim Schließen des Ankama Launcher",
+          "tray": "In Infobereich minimieren",
+          "quit": "Schließen"
+        },
+        "atMinimize": {
+          "title": "Beim Minimieren des Ankama Launcher",
+          "taskbar": "In Taskleiste minimieren",
+          "tray": "In Infobereich minimieren"
+        }
+      },
+      "about": {
+        "title": "Über",
+        "version": "Version"
+      },
+      "terms": {
+        "title": "Nutzungsbedingungen"
+      },
+      "logs": {
+        "title": "Logs",
+        "open": "Log-Verzeichnis öffnen"
+      }
+    }
+  },
+  "header": {
+    "menu": {
+      "games": "Spiele"
+    }
+  },
+  "logbox": {
+    "offline": "Offline",
+    "account": "Mein Account",
+    "help": "Support",
+    "logout": "Abmelden"
+  },
+  "release": {
+    "error": {
+      "cannotInstallInANonEmptyFolder": "Der ausgewählte Ordner ist nicht verfügbar",
+      "cannotInstallReadWritePermissions": "Du hast keine Zugriffsrechte auf diesen Ordner",
+      "cannotInstallNotEnoughSpace": "Nicht genügend freier Speicherplatz",
+      "cannotCreateDestinationFolder": "Ordner kann nicht erstellt werden",
+      "cannotMoveNotInstalled": "Die Installation muss abgeschlossen sein, bevor du das Spiel verschieben kannst",
+      "cannotMoveWhileMoving": "Das Spiel wird bereits verschoben",
+      "cannotMoveSameFolder": "Das Zielverzeichnis entspricht dem aktuellen Verzeichnis",
+      "cannotMoveReadWritePermissions": "Du hast keine Zugriffsrechte auf diesen Ordner",
+      "cannotMoveWhileUpdating": "Das Spiel wird aktualisiert",
+      "cannotMoveWhileRunning": "Das Spiel wird ausgeführt",
+      "cannotMoveNotEnoughSpace": "Nicht genügend freier Speicherplatz",
+      "cannotUpdateNoLocation": "Kein Zielort angegeben",
+      "cannotUpdateOffline": "Dein Computer ist nicht mit dem Internet verbunden",
+      "cannotUpdateGameIsRunning": "Es läuft bereits eine Spielinstanz",
+      "cannotUpdateAlreadyRunning": "Ein Update ist im Gange",
+      "cannotUpdateReleaseIsMoving": "Das Spiel wird gerade verschoben",
+      "cannotStartNotInstalled": "Das Spiel ist nicht installiert",
+      "cannotStartWhileUpdating": "Ein Update ist im Gange",
+      "cannotStartUpdateAvailable": "Ein Update ist verfügbar",
+      "cannotStartMaxInstancesReached": "Es läuft bereits die maximale Anzahl an Spielinstanzen",
+      "cannotStartReleaseIsMoving": "Das Spiel wird gerade verschoben",
+      "cannotUpdateCytrusVersionNotHandled": "Game's deployed version is not handled by this Ankama Launcher's version"
+    }
+  },
+  "releaseSettings": {
+    "title": "{releaseName}-Einstellungen",
+    "tabs": {
+      "general": {
+        "title": "Allgemeine Optionen",
+        "repairTitle": "Wiederherstellung",
+        "repairExplanation": "Wenn das Spiel nicht richtig funktioniert, kann eine Wiederherstellung das Problem beheben, indem die Spieledateien auf deinem Computer überprüft werden.",
+        "repair": "Wiederherstellen",
+        "toolsTitle": "Tools",
+        "toolsExplanation": "Greife auf Spieleordner oder Logdateien zu. Füge die Logdateien deinen Fehlerberichten hinzu.",
+        "openLogs": "Logs ansehen",
+        "openReleaseFolder": "Spieleordner öffnen",
+        "uninstallTitle": "Deinstallation",
+        "uninstallExplanation": "Installationsordner und Verknüpfungen löschen.",
+        "uninstall": "{fullGameName} deinstallieren"
+      },
+      "move": {
+        "title": "Installationsverzeichnis ändern",
+        "moveButton": "Verschieben"
+      },
+      "licenses": {
+        "title": "Lizenzen"
+      }
+    }
+  },
+  "releaseInstall": {
+    "install": "Installation",
+    "chooseInstallFolder": "Installationsverzeichnis",
+    "selectFolder": "Diesen Ordner auswählen",
+    "space": {
+      "required": "Benötigter Festplattenspeicher:",
+      "free": "Freier Festplattenspeicher:"
+    },
+    "cancelButton": "Abbrechen",
+    "installButton": "Installieren"
+  },
+  "releaseUninstall": {
+    "uninstalling": "Deinstallation",
+    "sentence": "Möchtest du {releaseName} wirklich deinstallieren?",
+    "cancelButton": "Abbrechen",
+    "uninstallButton": "Deinstallieren"
+  },
+  "releaseView": {
+    "version": "Version {version}"
+  },
+  "releaseViewActionBar": {
+    "options": "Optionen",
+    "update": "Aktualisieren",
+    "play": "Spielen",
+    "launching": "Wird gestartet …",
+    "playing": "Wird ausgeführt …",
+    "downloadPending": "Download läuft",
+    "downloadPaused": "Download pausiert",
+    "downloadSpeed": "Downloadgeschwindigkeit: {downloadSpeed}/s",
+    "repairProgress": "Dateiüberprüfung:",
+    "launchDownload": "Download starten",
+    "resume": "Download fortsetzen",
+    "pause": "Pausieren",
+    "install": "Installieren",
+    "runningInstances": "{runningInstancesCount} Instanzen werden ausgeführt …",
+    "remainingSizeToDownload": "{remainingSizeToDownload} verbleiben zum Download"
+  },
+  "terms": {
+    "title": "Allgemeine Nutzungsbedingungen",
+    "accept": "Annehmen",
+    "reject": "Ablehnen"
+  },
+  "login": {
+    "title": "Melde dich mit deinem",
+    "subtitle": "Ankama-Account an",
+    "login": "Accountname",
+    "password": "Passwort",
+    "stayLoggedIn": "Angemeldet bleiben",
+    "signIn": "Anmelden",
+    "cannotSignIn": "Anmeldung nicht möglich?",
+    "signUp": "Registrieren",
+    "support": "Support kontaktieren"
+  },
+  "haapi": {
+    "error": {
+      "generic": "Während der Authentifizierung ist ein Fehler aufgetreten",
+      "ban": "Account wurde gebannt",
+      "blacklist": "Die verwendete IP ist verdächtig und steht auf der Sperrliste",
+      "locked": "Der Account wurde gesperrt",
+      "deleted": "Der Account wurde gelöscht",
+      "resetAnkama": "Bitte setze deinen Account in der Accountverwaltung zurück",
+      "otpTimeFailed": "Entsperre deinen Account mit dem Ankama Authenticator",
+      "securityCard": "Der Account erfordert eine Sicherheitskarte",
+      "bruteForce": "Deine IP wurde wegen eines Brute-Force-Angriffs auf die Sperrliste gesetzt",
+      "failed": "Benutzerdaten ungültig",
+      "partner": "Der Account ist wegen einer Einschränkung eines Partners nicht autorisiert",
+      "invalidEmail": "Bitte bestätige deine E-Mail-Adresse in der Accountverwaltung",
+      "notFound": "Account kann nicht gefunden werden"
+    }
+  },
+  "disk": {
+    "error": {
+      "unableToGetDriveInfo": "Datenträgerinformationen können nicht abgerufen werden",
+      "invalidPath": "Ungültiger Pfad"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "zaap-updater-helpers",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "deep-copy": "1.4.2",
+    "es6-promisify": "6.0.0",
+    "instill": "0.0.5",
+    "munchausen": "0.0.1"
+  }
+}

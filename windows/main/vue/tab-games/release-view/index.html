@@ -1,0 +1,332 @@
+<link rel="import" href="./release-view-ratings/index.html">
+<link rel="import" href="./release-view-action-bar/index.html">
+<link rel="import" href="./release-view-hero/index.html">
+<link rel="import" href="./release-view-pushes/index.html">
+
+<template>
+  <div class="m-release-view" :class="classes" :style="style">
+    <div class="m-release-view--background" :style="background">
+    </div>
+    <div class="m-release-view--content" v-if="release">
+      <aside class="m-release-view--content-aside">
+        <img :src="release.information.url + '/logo.png?v=' + release.information.version" class="m-release-view--logo">
+
+        <ul class="m-release-view--content-aside-links">
+          <li>
+            <a class="m-release-view--content-aside-link" v-if="release.version">
+              <zaap-icon icon="arrow"></zaap-icon>
+              <strong>{{ $t('releaseView.version', {version: releaseVersion}) }}</strong>
+            </a>
+          </li>
+        </ul>
+
+        <release-view-ratings :ratings="ratings" v-if="!isInstalled"></release-view-ratings>
+
+        <release-view-action-bar :release="release"></release-view-action-bar>
+      </aside>
+
+      <div class="m-release-view--content-news-wrapper">
+        <div class="m-release-view--content-news" :style="contentNewsStyle">
+          <release-view-hero :release="releaseLightForHero"></release-view-hero>
+
+          <release-view-pushes :release="release"></release-view-pushes>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popups -->
+    <release-install></release-install>
+    <release-settings></release-settings>
+    <release-uninstall></release-uninstall>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'release-view', {
+    data: {
+      background: {
+        backgroundImage: '',
+      },
+      maxWidth: '100%',
+    },
+    computed: {
+      release() {
+        return this.$store.getters.displayedRelease
+      },
+      releaseLightForHero() {
+        return {
+          gameName: this.release.gameName,
+          name: this.release.name,
+          information: this.release.information,
+        }
+      },
+      releaseVersion() {
+        return this.release.version.substr(this.release.version.indexOf('_') + 1)
+      },
+      isInstalled() {
+        return this.release && (this.release.isInstalled || this.release.isInstalling)
+      },
+      classes() {
+        return {
+          'm-release-view__installed': this.isInstalled,
+        }
+      },
+      info() {
+        if (!this.release) {
+          return {}
+        }
+
+        const language = this.$store.state.settings[SETTINGS_KEYS.LANGUAGE]
+        return this.release.information[language]
+      },
+      style() {
+        if (!this.info.style) {
+          return {}
+        }
+
+        return {
+          '--color-primary': this.info.style.primaryColor,
+          '--color-lighten-primary': this.info.style.lightenPrimaryColor,
+        }
+      },
+      contentNewsStyle() {
+        return {
+          maxWidth: this.maxWidth,
+        }
+      },
+      ratings() {
+        return this.release.ratings
+      },
+    },
+    methods: {
+      onWindowResize() {
+        const containerVerticalPadding = 133
+        const containerHeight = this.$el.clientHeight - containerVerticalPadding
+
+        this.maxWidth = containerHeight * 1.2
+      },
+      onKeyUp(event) {
+        const lastCharacter = event.code.charAt(event.code.length - 1)
+        const isValidNumber = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(lastCharacter)
+        const isNumericKey = event.code.startsWith('Digit') || event.code.startsWith('Numpad')
+
+        if (event.ctrlKey && isNumericKey && isValidNumber) {
+          this.$store.dispatch('startRelease', {
+            release: this.release,
+            numberOfInstancesToStart: parseInt(lastCharacter),
+          })
+        }
+      },
+      setBackgroundImage(backgroundUrl, fallbackBackgroundUrl) {
+        // Preload background to avoid blink
+        const img = new Image()
+        img.src = backgroundUrl
+        img.onload = () => {
+          this.background.backgroundImage = `url("${backgroundUrl}?v=${this.release.information.version}")`
+        }
+        img.onerror = () => {
+          if (fallbackBackgroundUrl) {
+            this.setBackgroundImage(fallbackBackgroundUrl)
+          } else {
+            this.background.backgroundImage = `none`
+          }
+        }
+      },
+      openExternal(url) {
+        this.$store.dispatch('openExternal', url)
+      },
+    },
+    watch: {
+      release(newRelease, oldRelease) {
+        if (oldRelease && newRelease.information.url === oldRelease.information.url) {
+          return
+        }
+
+        // Force rerun animations
+        this.$el.classList.add('no-animation')
+        void this.$el.offsetWidth
+        this.$el.classList.remove('no-animation')
+
+        const {
+          url,
+        } = newRelease.information
+
+        const backgroundUrl = url + (this.isInstalled ? '/background.jpg' : '/not_installed_background.jpg')
+        this.setBackgroundImage(backgroundUrl, url + '/background.jpg')
+      },
+    },
+    mounted() {
+      // Window resize
+      window.addEventListener('resize', this.onWindowResize)
+      setTimeout(this.onWindowResize)
+
+      // Shortcuts
+      window.addEventListener('keyup', this.onKeyUp)
+    },
+    beforeDestroy() {
+      // Window resize
+      window.removeEventListener('resize', this.onWindowResize)
+
+      // Shortcuts
+      window.removeEventListener('keyup', this.onKeyUp)
+    },
+  })
+</script>
+
+<style>
+  .m-release-view {
+    position: relative;
+    display: block;
+    width: calc(100% - var(--aside-width));
+    height: 100%;
+  }
+
+  /**
+   * Background
+   */
+  .m-release-view--background {
+    z-index: -1;
+    position: fixed;
+    display: block;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-position: center center;
+    background-size: cover;
+  }
+
+  /**
+   * Content
+   */
+  .m-release-view--content {
+    display: flex;
+    z-index: 1;
+    padding: 30px 40px;
+  }
+
+  .m-release-view--content-aside {
+    min-width: 280px;
+    margin-right: 40px;
+    z-index: 1;
+  }
+
+  .m-release-view--content-aside-links {
+    list-style: none;
+    margin: 15px 0 50px;
+  }
+
+  .m-release-view--content-aside-link {
+    display: flex;
+    text-decoration: none;
+    color: var(--color-white);
+    height: 18px;
+    line-height: 18px;
+  }
+
+  .m-release-view--content-aside-link .c-zaap-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+  }
+
+  .m-release-view--content-aside-link strong {
+    color: var(--color-lighten-primary);
+    font-weight: var(--font-weight-raleway-bold);
+  }
+
+  .m-release-view--content-news-wrapper {
+    width: 100%;
+  }
+
+  .m-release-view--content-news {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /**
+   * Logo
+   */
+  .m-release-view--logo {
+    display: block;
+    min-height: 150px;
+    height: 20vh;
+    margin-left: -20px;
+  }
+
+  /**
+   * Hero
+   */
+  .m-release-view--hero {
+    position: relative;
+  }
+
+
+  .m-wakfu-hero img {
+    width: 100%;
+  }
+
+  .m-wakfu-hero--background {
+    width: 100%;
+  }
+
+  .m-wakfu-hero--brakmarian {
+    position: absolute;
+    top: -100px;
+    left: calc((190 / 1600) * -100%);
+    padding-top: calc(100px - (60 / 1600) * 100%);
+    width: calc((911 / 1600) * 100%);
+    animation: releaseHeroBrakmarianFade 1s;
+  }
+
+  .m-wakfu-hero--bontarian {
+    position: absolute;
+    top: -100px;
+    padding-top: calc(100px - (32 / 1600) * 100%);
+    right: calc((140 / 1600) * -100%);
+    width: calc((998 / 1600) * 100%);
+    animation: releaseHeroBontarianFade 1s;
+  }
+
+  .m-wakfu-hero--logo {
+    position: absolute;
+    top: 0;
+    padding-top: calc((70 / 1600) * 100%);
+    left: calc((540 / 1600) * 100%);
+    width: calc((523 / 1600) * 100%);
+    animation: releaseHeroLogoFade 1s;
+  }
+
+  @keyframes releaseHeroLogoFade {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes releaseHeroBrakmarianFade {
+    0%,
+    20% {
+      opacity: 0;
+      transform: translateX(-25%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes releaseHeroBontarianFade {
+    0%,
+    20% {
+      opacity: 0;
+      transform: translateX(25%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+</style>

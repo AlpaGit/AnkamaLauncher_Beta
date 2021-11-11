@@ -1,0 +1,234 @@
+<template>
+  <div class="m-login">
+    <header class="m-login--header">
+      <div class="m-login--header-logo">
+        <img :src="component.path + '/../logo.png'" alt="">
+      </div>
+
+      <div class="m-login--header-right">
+        <div class="m-login--header-support">
+          <zaap-button type="light" min-width="0">
+            {{ $t('login.support') }}
+          </zaap-button>
+        </div>
+
+        <div class="m-login--header-language-dropdown">
+          <zaap-dropdown>
+            <template slot="label">
+              {{ languageLabels[language] || language }}
+            </template>
+            <zaap-dropdown-item v-for="supportedLanguage in supportedLanguages"
+                                :key="supportedLanguage"
+                                @click="language = supportedLanguage">
+              {{ languageLabels[supportedLanguage] || supportedLanguage }}
+            </zaap-dropdown-item>
+          </zaap-dropdown>
+        </div>
+      </div>
+    </header>
+
+    <form @keyup.enter="signIn" class="m-login--form">
+      <div class="m-login--form-title">
+        {{ $t('login.title') }} <br>
+        {{ $t('login.subtitle') }}
+      </div>
+
+      <zaap-input v-model="login" :autofocus="(login.length === 0)" :errored="!!error">
+        {{ $t('login.login') }}
+      </zaap-input>
+      <zaap-input v-model="password" type="password" :autofocus="(login.length > 0)"
+                  :errored="!!error" :error-message="error ? $t(error.message) : ''">
+        {{ $t('login.password') }}
+      </zaap-input>
+
+      <zaap-checkbox v-model="stayLoggedIn">
+        {{ $t('login.stayLoggedIn') }}
+      </zaap-checkbox>
+
+      <div class="m-login--form-button-container">
+        <zaap-button type="filled" @click="signIn" :disabled="!canSubmit" size="medium">
+          {{ $t('login.signIn') }}
+        </zaap-button>
+        <zaap-button  @click="openGoAnkama('sign-up')" size="medium">
+          {{ $t('login.signUp') }}
+        </zaap-button>
+      </div>
+
+      <div class="m-login--link">
+        <zaap-button type="light" @click="openGoAnkama('cannot-sign-in')" min-width="0">
+          {{ $t('login.cannotSignIn') }}
+        </zaap-button>
+      </div>
+      <div class="m-login--illu" :style="illuStyle"></div>
+    </form>
+  </div>
+</template>
+
+<script>
+  /* global ipcRenderer, remoteCommunication */
+  VueComponent(this, 'login', {
+    data: {
+      languageLabels: {
+        de: 'Deutsch',
+        es: 'Español',
+        en: 'English',
+        fr: 'Français',
+        it: 'Italiano',
+        pt: 'Português',
+      },
+      login: '',
+      password: '',
+      stayLoggedIn: false,
+      error: null,
+      errorCallback: null,
+    },
+    computed: Object.assign({
+      supportedLanguages() {
+        return remote.require('lib/settings').supportedLanguages
+      },
+      illuStyle() {
+        return {
+          backgroundImage: `url(${this.component.path}/images/background.jpg)`,
+        }
+      },
+      canSubmit() {
+        return this.login && this.password
+      },
+    }, mapSettingsAsComputed({
+      language: SETTINGS_KEYS.LANGUAGE,
+    })),
+    methods: {
+      signIn() {
+        if (!this.canSubmit) {
+          return
+        }
+        this.$store.dispatch(
+          'login',
+          {
+            login: this.login,
+            password: this.password,
+            stayLoggedIn: this.stayLoggedIn,
+          }
+        ).catch((error) => {
+          this.error = error
+        })
+      },
+      openExternal(url) {
+        this.$store.dispatch('openExternal', url)
+      },
+      openGoAnkama(keyword) {
+        this.$store.dispatch('goAnkamaOpen', keyword)
+      },
+      loginErrorCallback(event, error) {
+        this.error = error
+      },
+    },
+    created() {
+      this.error = null
+      this.password = ''
+      this.login = this.$store.state.settings[SETTINGS_KEYS.LAST_AUTHENTICATED_LOGIN] || ''
+      this.stayLoggedIn = !!this.$store.state.settings[SETTINGS_KEYS.STAY_LOGGED_IN]
+
+      this.errorCallback = this.loginErrorCallback.bind(this)
+      ipcRenderer.on(remoteCommunication.CHANNELS.AUTH_LOGIN_ERROR, this.errorCallback)
+    },
+    beforeDestroy() {
+      ipcRenderer.removeListener(remoteCommunication.CHANNELS.AUTH_LOGIN_ERROR, this.errorCallback)
+    },
+  })
+</script>
+
+<style>
+  .m-login {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    background-image: var(--texture-noise);
+  }
+
+  .m-login--header {
+    position: relative;
+    height: var(--header-height);
+    background: var(--color-black-60);
+    z-index: 1;
+  }
+
+  .m-login--header-logo {
+    width: var(--aside-width);
+    text-align: center;
+    padding: 5px 0;
+  }
+  .m-login--header-logo img {
+    width: 40px;
+  }
+
+  .m-login--header-right {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+  }
+
+  .m-login--header-support {
+    display: inline-block;
+    transform: translateY(-1px);
+  }
+  .m-login--header-support > :not(.c-zaap-button--container__disabled) * {
+    cursor: pointer !important;
+  }
+  .m-login--header-support * {
+    font: var(--font-weight-dosis-semibold) var(--font-size-default) var(--font-family-dosis) !important;
+  }
+
+  .m-login--header-language-dropdown {
+    display: inline-block;
+  }
+
+  .m-login--form {
+    width: 450px;
+    height: 100%;
+    padding: 40px;
+    margin-left: var(--aside-width);
+    background-color: var(--color-black-pearl);
+    background-image: var(--texture-noise);
+  }
+
+  .m-login--form::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: var(--header-height);
+    bottom: 0;
+    left: 0;
+    width: var(--aside-width);
+    background: var(--color-black-40);
+  }
+
+  .m-login--form-title {
+    font: var(--font-weight-dosis-bold) 24px var(--font-family-dosis);
+    margin-bottom: 30px;
+  }
+
+  .m-login--form-button-container {
+    margin: 30px 0 15px;
+  }
+
+  .m-login--form-button-container > * {
+    width: calc(50% - 11px);
+  }
+
+  .m-login--link .c-zaap-button--container .c-zaap-button {
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .m-login--illu {
+    position: absolute;
+    top: var(--header-height);
+    right: 0;
+    bottom: 0;
+    left: calc(var(--aside-width) + 450px);
+    background-size: cover;
+    background-position: center right;
+  }
+</style>

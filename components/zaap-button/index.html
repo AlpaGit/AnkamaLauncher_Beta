@@ -1,0 +1,223 @@
+<template>
+  <div class="c-zaap-button--container" :class="containerClasses" :style="containerStyle">
+    <button type="button" @click="click" :disabled="disabled" class="c-zaap-button" @mouseup="blur">
+      <slot></slot>
+    </button>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapButton', {
+    props: {
+      disabled: {
+        type: Boolean,
+        default: false,
+      },
+      type: {
+        type: String,
+        validator(value) {
+          return ['filled', 'light'].includes(value)
+        },
+      },
+      size: {
+        type: String,
+        validator(value) {
+          return ['medium', 'small'].includes(value)
+        },
+      },
+      minWidth: {
+        type: String,
+        default: null,
+      },
+    },
+    computed: {
+      containerClasses() {
+        return {
+          ['c-zaap-button--container__' + this.type]: !!this.type,
+          ['c-zaap-button--container__' + this.size]: !!this.size,
+          'c-zaap-button--container__disabled': this.disabled,
+        }
+      },
+      containerStyle() {
+        let minWidth = this.minWidth
+        if (minWidth == null) {
+          minWidth = ['medium', 'small'].includes(this.size) ? '150px' : '200px'
+        }
+
+        return {
+          'min-width': minWidth,
+        }
+      },
+    },
+    methods: {
+      click() {
+        this.$emit('click')
+      },
+      blur() {
+        setTimeout(() => {
+          this.$el.querySelector('button').blur()
+        })
+      },
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-button--container {
+    --c-zaap-button--color: var(--color-primary);
+    --c-zaap-button--color-hover: var(--color-lighten-primary);
+    --c-zaap-button--height: 55px;
+    --c-zaap-button--medium-height: 45px;
+    --c-zaap-button--small-height: 40px;
+  }
+
+  .c-zaap-button--container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .c-zaap-button--container:not(.c-zaap-button--container__light) {
+    margin: 0 0 20px;
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__disabled {
+    opacity: 0.5;
+  }
+
+  .c-zaap-button--container:not(.c-zaap-button--container__light) + .c-zaap-button--container:not(.c-zaap-button--container__light) {
+    margin-left: 10px;
+  }
+
+  .c-zaap-button--container .c-zaap-button {
+    font-family: var(--font-family-raleway);
+    color: var(--color-white);
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__disabled .c-zaap-button {
+    color: var(--color-white-50);
+  }
+
+  .c-zaap-button--container .c-zaap-button .c-zaap-icon svg * {
+    fill: var(--color-white);
+  }
+
+  .c-zaap-button--container:not(.c-zaap-button--container__light) .c-zaap-button .c-zaap-icon {
+    width: calc(var(--c-zaap-button--height) - 37px);
+    height: calc(var(--c-zaap-button--height) - 37px);
+    transform: scale(1.2);
+  }
+
+  /* Bugfix for high DPI display, do not put filter on .c-zaap-icon directly */
+  .c-zaap-button--container:not(.c-zaap-button--container__light) .c-zaap-button .c-zaap-icon svg {
+    filter: var(--drop-shadow-default);
+  }
+
+  .c-zaap-button--container:not(.c-zaap-button--container__light) .c-zaap-button {
+    position: relative;
+    background: var(--color-white-10);
+    height: var(--c-zaap-button--height);
+    min-width: 100%;
+    line-height: 30px;
+    font-family: var(--font-family-dosis);
+    font-size: 24px;
+    font-weight: var(--font-weight-dosis-semibold);
+    text-transform: uppercase;
+    padding: 6px 20px;
+    border-radius: 3px;
+    transition: color 150ms, background-color 150ms, box-shadow 150ms, text-shadow 150ms;
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__filled:not(.c-zaap-button--container__disabled) .c-zaap-button {
+    box-shadow: var(--box-shadow-default);
+  }
+
+  .c-zaap-button--container:not(.c-zaap-button--container__light):not(.c-zaap-button--container__disabled):hover .c-zaap-button,
+  .c-zaap-button--container:not(.c-zaap-button--container__light):not(.c-zaap-button--container__disabled) .c-zaap-button:focus,
+  .c-zaap-button--container:not(.c-zaap-button--container__light):not(.c-zaap-button--container__disabled):active .c-zaap-button {
+    background: var(--color-white-30)
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__filled:not(.c-zaap-button--container__disabled):hover .c-zaap-button,
+  .c-zaap-button--container.c-zaap-button--container__filled:not(.c-zaap-button--container__disabled) .c-zaap-button:focus,
+  .c-zaap-button--container.c-zaap-button--container__filled:not(.c-zaap-button--container__disabled):active .c-zaap-button {
+    color: var(--color-white);
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__filled .c-zaap-button {
+    color: var(--color-white);
+    text-shadow: var(--text-shadow-default);
+    background: var(--c-zaap-button--color);
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__filled:not(.c-zaap-button--container__disabled):hover .c-zaap-button,
+  .c-zaap-button--container.c-zaap-button--container__filled:not(.c-zaap-button--container__disabled) .c-zaap-button:focus,
+  .c-zaap-button--container.c-zaap-button--container__filled:not(.c-zaap-button--container__disabled):active .c-zaap-button {
+    color: var(--color-white);
+    background: var(--c-zaap-button--color-hover);
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__medium .c-zaap-button {
+    height: var(--c-zaap-button--medium-height);
+    font-size: 18px;
+    padding: 6px 20px;
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__medium .c-zaap-button .c-zaap-icon {
+    width: calc(var(--c-zaap-button--medium-height) - 27px);
+    height: calc(var(--c-zaap-button--medium-height) - 27px);
+    transform: translate(-2px, 2px);
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__small .c-zaap-button {
+    height: var(--c-zaap-button--small-height);
+    font-size: 16px;
+    font-weight: var(--font-weight-dosis-bold);
+    padding: 5px 18px;
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__small .c-zaap-button .c-zaap-icon {
+    width: calc(var(--c-zaap-button--small-height) - 22px);
+    height: calc(var(--c-zaap-button--small-height) - 22px);
+    transform: translate(-2px, 3px);
+  }
+
+  .c-zaap-button--container:not(.c-zaap-button--container__light).c-zaap-button--container__disabled .c-zaap-button {
+    background: var(--color-white-10);
+    text-shadow: none;
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__light .c-zaap-button {
+    height: 30px;
+    line-height: 30px;
+    padding: 0 8px;
+    font-size: var(--font-size-default);
+    font-weight: var(--font-weight-raleway-medium);
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__light .c-zaap-button .c-zaap-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 2px;
+    transform: translateY(2px);
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__light .c-zaap-button svg {
+    opacity: 0.9;
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__light:not(.c-zaap-button--container__disabled):hover .c-zaap-button,
+  .c-zaap-button--container.c-zaap-button--container__light:not(.c-zaap-button--container__disabled) .c-zaap-button:focus,
+  .c-zaap-button--container.c-zaap-button--container__light:not(.c-zaap-button--container__disabled):active .c-zaap-button {
+    color: var(--c-zaap-button--color);
+  }
+
+  .c-zaap-button--container.c-zaap-button--container__light:not(.c-zaap-button--container__disabled):hover .c-zaap-button svg *,
+  .c-zaap-button--container.c-zaap-button--container__light:not(.c-zaap-button--container__disabled) .c-zaap-button:focus svg *,
+  .c-zaap-button--container.c-zaap-button--container__light:not(.c-zaap-button--container__disabled):active .c-zaap-button svg * {
+    fill: var(--c-zaap-button--color);
+  }
+
+  .c-zaap-button--container:not(.c-zaap-button--container__disabled):active .c-zaap-button {
+    transform: translateY(1px) scale(0.98);
+  }
+</style>

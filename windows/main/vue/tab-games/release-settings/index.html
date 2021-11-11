@@ -1,0 +1,384 @@
+<template>
+  <zaap-popup v-if="showPopup" @close="closeSettings" width="700px" height="480px" class="m-release-settings">
+    <zaap-tabs :title="release.fullName"
+               :logo-path="iconPath">
+      <zaap-tab :title="$t('releaseSettings.tabs.general.title')">
+        <template v-for="(property) in configuration">
+          <!-- Specific cases for zaap custom options -->
+          <template v-if="property.name === 'autoUpdate'">
+            <zaap-checkbox v-model="settings[property.name]">
+              {{ $t('releaseSettings.tabs.general.autoUpdate') }}
+            </zaap-checkbox>
+          </template>
+          <template v-else-if="property.name === 'displayAllReleases'">
+            <zaap-checkbox v-model="settings[property.name]" v-if="nonMainReleases.length > 0">
+              {{ $t('releaseSettings.tabs.general.displayAllReleases', { releaseList: nonMainReleasesNames }) }}
+            </zaap-checkbox>
+          </template>
+
+          <!-- Back to generic code -->
+          <template v-else-if="property.type === 'checkbox'">
+            <zaap-checkbox v-model="settings[property.name]">
+              {{ property.label[language] || property.label.en }}
+            </zaap-checkbox>
+          </template>
+          <template v-else-if="property.type === 'radio'">
+            <div class="form-group--title">
+              {{ property.label[language] || property.label.en }}
+            </div>
+            <zaap-radio-group v-model="settings[property.name]">
+              <zaap-radio v-for="option in property.options" :key="option.value" :value="option.value">
+                {{ option.label[language] || option.label.en || option.label || option.value }}
+              </zaap-radio>
+            </zaap-radio-group>
+          </template>
+          <template v-else-if="property.type === 'select'">
+            <div class="form-group--title">
+              {{ property.label[language] || property.label.en }}
+            </div>
+            <zaap-select v-model="settings[property.name]">
+              <zaap-option v-for="option in property.options" :key="option.value" :value="option.value">
+                {{ option.label[language] || option.label.en || option.label || option.value }}
+              </zaap-option>
+            </zaap-select>
+          </template>
+          <div class="form-group" v-else-if="property.type === 'text'">
+            <zaap-input v-model="settings[property.name]" type="text">
+              {{ property.label[language] || property.label.en }}
+            </zaap-input>
+          </div>
+          <div class="form-group" v-else-if="property.type === 'button'">
+            <zaap-button @click="runScript(property.onclick)" :disabled="disableButtons" size="small">
+              {{ property.label[language] || property.label.en }}
+            </zaap-button>
+          </div>
+          <template v-else>
+            {{ property.label[language] || property.label.en }}: Unsupported type <strong>{{ property.type }}</strong>
+          </template>
+        </template>
+
+        <hr class="separator">
+
+        <div class="form-group">
+          <div class="form-group--title">
+            {{ $t('releaseSettings.tabs.general.repairTitle') }}
+          </div>
+          <p>
+            {{ $t('releaseSettings.tabs.general.repairExplanation') }}
+
+          </p>
+          <zaap-button @click="repair" size="small" min-width="0"
+                       :disabled="isRunning || release.isUpdateProcessRunning">
+            <zaap-icon icon="repair"></zaap-icon>
+            {{ $t('releaseSettings.tabs.general.repair') }}
+          </zaap-button>
+        </div>
+
+        <div class="form-group">
+          <div class="form-group--title">
+            {{ $t('releaseSettings.tabs.general.toolsTitle') }}
+          </div>
+          <p>
+            {{ $t('releaseSettings.tabs.general.toolsExplanation') }}
+          </p>
+          <zaap-button @click="openReleaseFolder" size="small" min-width="0">
+            <zaap-icon icon="folder"></zaap-icon>
+            {{ $t('releaseSettings.tabs.general.openReleaseFolder') }}
+          </zaap-button>
+          <zaap-button @click="openLogsFolder" size="small" min-width="0">
+            {{ $t('releaseSettings.tabs.general.openLogs') }}
+          </zaap-button>
+        </div>
+
+        <div class="form-group">
+          <div class="form-group--title">
+            {{ $t('releaseSettings.tabs.general.uninstallTitle') }}
+          </div>
+          <p>
+            {{ $t('releaseSettings.tabs.general.uninstallExplanation') }}
+          </p>
+          <zaap-button @click="uninstall" size="small" min-width="0" :disabled="isRunning">
+            <zaap-icon icon="close"></zaap-icon>
+            {{ $t('releaseSettings.tabs.general.uninstall', {fullGameName: release.fullName}) }}
+          </zaap-button>
+        </div>
+      </zaap-tab>
+
+      <zaap-tab :title="$t('releaseSettings.tabs.move.title')">
+        <zaap-input type="path" :open-dialog-button-label="$t('releaseInstall.selectFolder')"
+                    v-model="moveFolder"
+                    :path-suffix="release.folderName"
+                    :errored="!!error"
+                    :error-message="error ? $t(error.translationKey || error.message, error.translationParameters) : ''">
+          {{ $t('releaseInstall.chooseInstallFolder') }}
+        </zaap-input>
+        <div class="m-release-settings--space">
+          {{ $t('releaseSettings.tabs.move.space.required') }} <strong>{{ prettyMoveRequiredSpace }}</strong>
+          <template v-if="prettyMoveRequiredSpace === 0">{{ $t('releaseSettings.tabs.move.space.sameDisk') }}</template><br>
+          {{ $t('releaseSettings.tabs.move.space.free') }} <strong>{{ prettyFreeDiskSpace }}</strong>
+        </div>
+
+        <div class="m-release-settings--buttons-bottom">
+          <zaap-button type="filled" @click="move" size="medium"
+                       :disabled="moveFolder.length < 2 || !!error || release.isUpdateProcessRunning">
+            {{ $t('releaseSettings.tabs.move.moveButton') }}
+          </zaap-button>
+        </div>
+      </zaap-tab>
+
+      <zaap-tab v-if="hasLicenses" :title="$t('releaseSettings.tabs.licenses.title')">
+        <div v-for="license in licenses">
+          <p class="license-title">
+            {{ license.title }}
+          </p>
+          <p v-html="license.text">
+          </p>
+        </div>
+      </zaap-tab>
+    </zaap-tabs>
+  </zaap-popup>
+</template>
+
+<script>
+  /* global ipcRenderer, remoteCommunication */
+  VueComponent(this, 'release-settings', {
+    data: {
+      settings: {},
+      disableButtons: false,
+      moveFolder: '',
+      moveRequiredSpace: null,
+      moveOriginDiskPath: null,
+      moveDestinationDiskPath: null,
+      freeDiskSpace: null,
+      error: null,
+      errorCallback: null,
+    },
+    computed: {
+      language() {
+        return this.$store.state.settings[SETTINGS_KEYS.LANGUAGE]
+      },
+      release() {
+        return this.$store.getters.displayedRelease
+      },
+      nonMainReleases() {
+        return Object.values(this.$store.state.games[this.release.gameUid].releases)
+          .filter((release) => {
+            return release.name !== 'main' && release.information.default.hasOwnProperty('displayName')
+          })
+      },
+      nonMainReleasesNames() {
+        return this.nonMainReleases
+          .map((release) => {
+            return release.information[this.language].displayName
+          })
+          .join(', ')
+      },
+      showPopup() {
+        return this.release && this.$store.state.display.showReleaseSettingsPopup
+      },
+      isRunning() {
+        if (!this.release) {
+          return false
+        }
+        return this.release.runningInstances.length > 0
+      },
+      iconPath() {
+        return this.release.information.url + '/icon.png?v=' + this.release.information.version
+      },
+      configuration() {
+        if (!this.release || this.release.settings === false) {
+          return []
+        }
+
+        return Object.values(this.release.settings.configuration).sort((configA, configB) => {
+          return configA.order - configB.order
+        })
+      },
+      prettyFreeDiskSpace() {
+        if (!this.freeDiskSpace) {
+          return null
+        }
+
+        return this.prettyBytes(this.freeDiskSpace)
+      },
+      prettyMoveRequiredSpace() {
+        if (!this.moveRequiredSpace) {
+          return null
+        }
+
+        if (this.areMoveOriginAndDestinationOnSameDisk) {
+          return 0
+        }
+
+        return this.prettyBytes(this.moveRequiredSpace)
+      },
+      areMoveOriginAndDestinationOnSameDisk() {
+        return this.moveOriginDiskPath === this.moveDestinationDiskPath
+      },
+      hasLicenses() {
+        return this.release.hasLicenses
+      },
+      licenses() {
+        return ipcRenderer.sendSync(remoteCommunication.CHANNELS.RELEASE_GET_LICENSES,
+          this.release.gameUid,
+          this.release.name
+        )
+      },
+    },
+    methods: {
+      repair() {
+        this.$store.dispatch('repairRelease', {
+          release: this.release,
+        })
+        this.closeSettings()
+      },
+      uninstall() {
+        this.$store.dispatch('openReleaseUninstallPopup')
+      },
+      openLogsFolder() {
+        const shell = require('electron').shell
+        const logsPath = ipcRenderer.sendSync(
+          remoteCommunication.CHANNELS.RELEASE_GET_LOGS_PATH,
+          this.release.gameUid,
+          this.release.name
+        )
+
+        shell.openItem(logsPath)
+      },
+      openReleaseFolder() {
+        const shell = require('electron').shell
+        shell.openItem(this.release.location)
+      },
+      move() {
+        this.error = ''
+        this.$store.dispatch('moveRelease', {
+          release: this.release,
+          newPath: this.moveFolder,
+        })
+      },
+      moveErrorCallback(event, error) {
+        this.error = error
+      },
+      closeSettings() {
+        this.$store.dispatch('closeReleaseSettingsPopup')
+      },
+      runScript(path) {
+        let scriptId
+        const scriptResultCallback = (event, id, code) => {
+          if (id === scriptId) {
+            this.disableButtons = false
+            if (code) {
+              console.error('Script failed with exit code', code)
+            }
+            ipcRenderer.removeListener(remoteCommunication.CHANNELS.SPAWN_SCRIPT_RESULT, scriptResultCallback)
+          }
+        }
+        ipcRenderer.on(remoteCommunication.CHANNELS.SPAWN_SCRIPT_RESULT, scriptResultCallback)
+        this.disableButtons = true
+        this.$store.dispatch('spawnScript', {
+          location: this.release.location,
+          path,
+        }).then((id) => {
+          scriptId = id
+        })
+      },
+      prettyBytes: require('./lib/prettyBytes'),
+    },
+    watch: {
+      showPopup() {
+        this.settings = {}
+        this.error = null
+        if (this.release.settings) {
+          // copy the settings as the store cannot be modified without mutations
+          Object.keys(this.release.settings.values).forEach((key) => {
+            // use Vue.set instead of this.settings[property.name] to add reactivity to each key
+            Vue.set(this.settings, key, this.release.settings.values[key])
+          })
+        }
+
+        this.moveFolder = this.release.location
+      },
+      settings: {
+        handler() {
+          this.$store.dispatch(
+            'updateReleaseSettings', {
+              gameUid: this.release.gameUid,
+              releaseName: this.release.name,
+              settings: this.settings,
+            }
+          )
+        },
+        deep: true,
+      },
+      moveFolder() {
+        const disk = remote.require('lib/disk')
+        if (this.moveFolder) {
+          disk.getDriveInfo(this.moveFolder)
+            .then((diskInfo) => {
+              this.freeDiskSpace = diskInfo.free
+              this.moveDestinationDiskPath = diskInfo.diskPath
+
+              if (!this.areMoveOriginAndDestinationOnSameDisk && this.freeDiskSpace <= this.moveRequiredSpace) {
+                return this.error = {
+                  translationKey: 'release.error.cannotMoveNotEnoughSpace',
+                }
+              }
+
+              this.error = null
+            })
+            .catch((error) => {
+              this.error = error
+            })
+        }
+      },
+      release() {
+        if (!this.release.location) {
+          return
+        }
+
+        const disk = remote.require('lib/disk')
+        disk.getDriveInfo(this.release.location)
+          .then((diskInfo) => {
+            this.moveOriginDiskPath = diskInfo.diskPath
+            this.error = null
+          })
+          .catch((error) => {
+            this.error = error
+          })
+
+        // Init move information
+        const releaseFolderSize = ipcRenderer.sendSync(
+          remoteCommunication.CHANNELS.RELEASE_GET_FOLDER_SIZE,
+          this.release.gameUid,
+          this.release.name
+        )
+
+        if (releaseFolderSize.error) {
+          this.error = releaseFolderSize.error
+        } else {
+          this.moveRequiredSpace = releaseFolderSize.size
+        }
+      },
+    },
+    mounted() {
+      this.errorCallback = this.moveErrorCallback.bind(this)
+      ipcRenderer.on(remoteCommunication.CHANNELS.RELEASE_MOVE_ERROR, this.errorCallback)
+    },
+    beforeDestroy() {
+      ipcRenderer.removeListener(remoteCommunication.CHANNELS.RELEASE_MOVE_ERROR, this.errorCallback)
+    },
+  })
+</script>
+
+<style>
+  .m-release-settings .license-title {
+    font-weight: var(--font-weight-dosis-bold);
+  }
+
+  .m-release-settings .m-release-settings--buttons-bottom {
+    position: absolute;
+    right: 50px;
+    bottom: 30px;
+    text-align: right;
+  }
+</style>

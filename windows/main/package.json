@@ -1,0 +1,16 @@
+{
+  "name": "zaap-window-main",
+  "private": true,
+  "description": "Main window for the application",
+  "dependencies": {},
+  "window": {
+    "width": 1200,
+    "height": 720,
+    "minWidth": 1024,
+    "minHeight": 576,
+    "frame": false,
+    "show": false,
+    "titleBarStyle": "hidden",
+    "backgroundColor": "#000000"
+  }
+}

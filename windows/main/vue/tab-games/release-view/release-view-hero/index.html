@@ -1,0 +1,141 @@
+<script>
+  (() => {
+    const fs = require('fs')
+    const path = require('path')
+
+    const releaseViewHeroStyleId = 'release-view-hero-style'
+    let releaseViewHeroStyleTag = document.getElementById(releaseViewHeroStyleId)
+    if (!releaseViewHeroStyleTag) {
+      const styleTag = document.createElement('style')
+      styleTag.id = releaseViewHeroStyleId
+      document.head.appendChild(styleTag)
+      releaseViewHeroStyleTag = styleTag
+    }
+
+    let initialReleaseViewHeroScale = 1
+    let lastInformationVersion = null
+    let lastBuiltComponent = null
+
+    VueComponent(this, 'release-view-hero', {
+      functional: true,
+      props: ['release'],
+      render(createElement, context) {
+        try {
+          // Use last build element if it's same information version
+          const informationVersion = context.props.release.information.version
+          if (lastBuiltComponent !== null && lastInformationVersion === informationVersion) {
+            return createElement(lastBuiltComponent)
+          }
+
+          const heroPath = path.join(context.props.release.information.url.replace(/^file:\/\//, ''), 'hero')
+          // Load template and styles
+          const template = fs.readFileSync(path.join(heroPath, 'index.html'), 'utf8')
+          const style = fs.readFileSync(path.join(heroPath, 'style.css'), 'utf8')
+
+          // Load translations
+          const langsPath = path.join(heroPath, 'langs')
+          if (fs.existsSync(langsPath)) {
+            const langFiles = fs.readdirSync(langsPath)
+
+            langFiles.forEach((filePath) => {
+              const language = filePath.split('.')[0]
+
+              try {
+                i18n.mergeLocaleMessage(language, {
+                  releaseHero: JSON.parse(fs.readFileSync(path.join(langsPath, filePath), 'utf8')),
+                })
+              } catch (error) {
+                logger.error('Unreadable hero language file', error)
+              }
+            })
+          }
+
+          // Build component
+          delete require.cache[require.resolve(heroPath)]
+		  
+          const component = require(heroPath)
+
+          // Modify component data to inject hero scale
+          // Add window resize listener to update the scale value
+          function onWindowResize() {
+            this.releaseViewHeroScale = this.$el.clientWidth / 1600
+            initialReleaseViewHeroScale = this.releaseViewHeroScale
+          }
+          let onWindowResizeBind = null
+          component.mounted = function () {
+            onWindowResizeBind = onWindowResize.bind(this)
+            window.addEventListener('resize', onWindowResizeBind)
+            setTimeout(onWindowResizeBind)
+          }
+          component.beforeDestroy = function () {
+            window.removeEventListener('resize', onWindowResizeBind)
+          }
+
+          const data = component.data
+          component.data = function () {
+            let ret = {}
+            if (typeof data === 'function') {
+              ret = data.call(this)
+            } else if (data) {
+              ret = data
+            }
+
+            ret = Object.assign(ret, {
+              releaseViewHeroScale: initialReleaseViewHeroScale,
+            })
+
+            return ret
+          }
+
+          component.computed = component.computed || {}
+          component.computed.releaseViewHeroStyle = function () {
+            return {
+              '--m-release-view-hero--real-scale': this.releaseViewHeroScale,
+              '--m-release-view-hero--scale': Math.max(this.releaseViewHeroScale * 1600 / 1080, 0.65),
+            }
+          }
+
+          // Wrap template with release view hero class and style
+          component.template = `
+            <div class="m-release-view-hero" :style="releaseViewHeroStyle">
+              ${template}
+            </div>
+          `
+
+          // Inject store
+          component.$store = context.parent.$store
+
+          // Inject style
+          releaseViewHeroStyleTag.textContent = style
+
+          // Update cached date
+          lastBuiltComponent = component
+          lastInformationVersion = informationVersion
+
+          return createElement(lastBuiltComponent)
+        } catch (err) {
+          logger.warn('Cannot render hero', context.props.release.gameName, context.props.release.name, err)
+          return createElement({template: '<div class="m-release-view-hero"></div>'})
+        }
+      },
+    })
+  })()
+</script>
+
+<style>
+  .m-release-view-hero {
+    position: relative;
+    width: 100%;
+    height: calc(900px * var(--m-release-view-hero--real-scale));
+    transform: translateZ(0); /* Force hero to be on its own layer - Also force GPU usage */
+  }
+
+  .m-release-view-hero:empty {
+    padding-top: calc(900 / 1600 * 100%);
+  }
+
+  .m-release-view-hero * {
+    pointer-events: none;
+    filter: blur(0); /* Avoid some blurry effects during/after animations */
+  }
+</style>

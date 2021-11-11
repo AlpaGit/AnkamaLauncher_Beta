@@ -1,0 +1,226 @@
+<template>
+  <div class="c-zaap-input--container" :class="classes">
+    <label>
+      <span class="c-zaap-input--label">
+        <slot></slot>
+      </span>
+      <zaap-icon icon="folder" v-if="type === 'path'" class="c-zaap-input--icon-folder"></zaap-icon>
+      <input type="text" v-model="localValue" :disabled="disabled" :autofocus="autofocus" autocomplete="off"
+             v-if="['text', 'path'].includes(type)" class="c-zaap-input--input" @focus="focus" @blur="blur">
+      <input type="password" v-model="localValue" :disabled="disabled" :autofocus="autofocus" autocomplete="off"
+             v-if="type === 'password'" class="c-zaap-input--input" @focus="focus" @blur="blur">
+      <span class="c-zaap-input--error" v-if="errored && errorMessage">
+        {{ errorMessage }}
+      </span>
+    </label>
+    <button @click="showOpenDialog" class="c-zaap-input--dots" v-if="type === 'path'" type="button">
+      <zaap-icon icon="dots"></zaap-icon>
+    </button>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapInput', {
+    props: {
+      value: {},
+      type: {
+        type: String,
+        validator(value) {
+          return ['text', 'password', 'path'].includes(value)
+        },
+        default: 'text',
+      },
+      errored: {
+        type: Boolean,
+        default: false,
+      },
+      errorMessage: {
+        type: String,
+      },
+      autofocus: {
+        type: Boolean,
+        default: false,
+      },
+      disabled: {
+        type: Boolean,
+        default: false,
+      },
+      openDialogButtonLabel: {
+        type: String,
+      },
+      pathSuffix: {
+        type: String,
+      },
+    },
+    data() {
+      return {
+        focused: false,
+      }
+    },
+    computed: {
+      localValue: {
+        get() {
+          return this.value
+        },
+        set(value) {
+          this.$emit('input', value)
+        },
+      },
+      classes() {
+        return {
+          ['c-zaap-input--container__' + this.type]: true,
+          'c-zaap-input--container__disabled': this.disabled,
+          'c-zaap-input--container__focused': this.focused,
+          'c-zaap-input--container__errored': this.errored,
+        }
+      },
+    },
+    methods: {
+      focus() {
+        this.focused = true
+      },
+      blur() {
+        this.focused = false
+      },
+      showOpenDialog() {
+        const path = require('path')
+        const remote = require('electron').remote
+        const dialog = remote.dialog
+        const pathHelper = remote.require('lib/pathHelper')
+        let defaultPath = ''
+
+        try {
+          defaultPath = pathHelper.findExistingParent(this.localValue)
+        } catch (error) {
+          console.warn('cannot find any existing path', this.localValue)
+        }
+
+        const dialogOptions = {
+          buttonLabel: this.openDialogButtonLabel,
+          defaultPath,
+          properties: [
+            'openDirectory',
+            'createDirectory',
+          ],
+        }
+
+        const paths = dialog.showOpenDialog(remote.getCurrentWindow(), dialogOptions)
+        if (paths && paths.length > 0) {
+          let selectedPath = paths[0]
+          if (this.pathSuffix) {
+            const selectedPathSepIndex = selectedPath.lastIndexOf(path.sep)
+            if (selectedPathSepIndex === -1) {
+              console.warn('invalid path', selectedPath)
+              return
+            }
+
+            const pathSuffixCompare = this.pathSuffix.replace(/\W+/g, '').toLowerCase()
+            const selectedPathCompare = selectedPath.substring(selectedPathSepIndex).replace(/\W+/g, '').toLowerCase()
+
+            if (!selectedPathCompare.includes(pathSuffixCompare)) {
+              selectedPath = path.join(selectedPath, this.pathSuffix)
+            }
+          }
+
+          this.localValue = selectedPath
+        }
+      },
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-input--container {
+    position: relative;
+    display: block;
+    margin: 0 0 15px;
+    transition: color 150ms;
+  }
+
+  .c-zaap-input--label {
+    display: block;
+    padding: 0 0 10px;
+    font: var(--font-label);
+    color: var(--color-white);
+    transition: color 150ms;
+  }
+
+  .c-zaap-input--input {
+    width: 100%;
+    height: 40px;
+    line-height: 38px;
+    font-size: 14px;
+    padding: 0 14px;
+    background-color: var(--color-black-60);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: var(--color-white);
+    font: var(--font-label);
+    border-radius: 3px;
+    transition: border 150ms;
+  }
+
+  .c-zaap-input--input[type="password"] {
+    letter-spacing: 2px;
+  }
+
+  .c-zaap-input--container:not(.c-zaap-input--container__disabled) .c-zaap-input--input:hover:not(:focus) {
+    border-color: var(--color-white);
+  }
+
+  .c-zaap-input--input:focus {
+    border-color: var(--color-lighten-primary);
+  }
+
+  .c-zaap-input--container__errored:not(.c-zaap-input--container__disabled) .c-zaap-input--input,
+  .c-zaap-input--container__errored:not(.c-zaap-input--container__disabled) .c-zaap-input--input:hover,
+  .c-zaap-input--container__errored:not(.c-zaap-input--container__disabled) .c-zaap-input--input:focus {
+    border-color: var(--color-punch);
+  }
+
+  .c-zaap-input--error {
+    display: block;
+    color: var(--color-punch);
+    font-weight: var(--font-weight-raleway-semibold);
+    padding-top: 3px;
+  }
+
+  .c-zaap-input--container__disabled {
+    opacity: 0.5;
+  }
+
+  .c-zaap-input--container__path .c-zaap-input--icon-folder {
+    position: absolute;
+    top: 32px;
+    left: 10px;
+    width: 27px;
+    height: 27px;
+  }
+
+  .c-zaap-input--container__path .c-zaap-input--icon-folder svg * {
+    fill: var(--color-primary);
+  }
+
+  .c-zaap-input--container__path .c-zaap-input--input {
+    padding-left: 43px;
+    padding-right: 41px;
+  }
+
+  .c-zaap-input--container__path .c-zaap-input--dots {
+    position: absolute;
+    top: 35px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
+    background: var(--color-white-20);
+    border-radius: 3px;
+    transition: background 150ms;
+  }
+
+  .c-zaap-input--container__path .c-zaap-input--dots svg * {
+    fill: var(--color-white);
+  }
+
+  .c-zaap-input--container__path .c-zaap-input--dots:hover {
+    background: var(--color-primary);
+  }
+</style>

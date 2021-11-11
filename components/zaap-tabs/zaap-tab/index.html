@@ -1,0 +1,38 @@
+<template>
+  <div class="c-zaap-tab" v-if="show">
+    <slot></slot>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapTab', {
+    props: {
+      title: String,
+    },
+    data() {
+      return {
+        show: false,
+      }
+    },
+    mounted() {
+      this.$parent.tabs.push(this)
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-tab {
+    position: relative;
+    padding: 0 50px 30px 40px;
+    min-height: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .c-zaap-tab > :first-child {
+    margin-top: 0;
+  }
+
+  .c-zaap-tab > :last-child {
+    margin-bottom: 0;
+  }
+</style>

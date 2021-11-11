@@ -1,0 +1,124 @@
+<template>
+  <div class="m-logbox" :class="classes">
+    <zaap-dropdown>
+      <template slot="label">
+        <img :src="avatar" class="m-logbox--avatar" alt="">
+        <div class="m-logbox--avatar m-logbox--avatar-offline">
+          <zaap-icon icon="offline"></zaap-icon>
+        </div>
+        <span class="m-logbox--nickname">{{ nickname }}</span>
+        <span class="m-logbox--offline-label">{{ $t('logbox.offline') }}</span>
+      </template>
+      <zaap-dropdown-item @click="account">
+        <zaap-icon icon="user"></zaap-icon>
+        {{ $t('logbox.account') }}
+      </zaap-dropdown-item>
+      <zaap-dropdown-item @click="help">
+        <zaap-icon icon="chat"></zaap-icon>
+        {{ $t('logbox.help') }}
+      </zaap-dropdown-item>
+      <zaap-dropdown-item @click="logout">
+        <zaap-icon icon="logout"></zaap-icon>
+        {{ $t('logbox.logout') }}
+      </zaap-dropdown-item>
+    </zaap-dropdown>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'logbox', {
+    computed: Object.assign({
+      nickname() {
+        if (!this.$store.state.settings[SETTINGS_KEYS.USER_INFO]) {
+          return null
+        }
+
+        return this.$store.state.settings[SETTINGS_KEYS.USER_INFO].nickname
+      },
+      avatar() {
+        if (!this.$store.state.settings[SETTINGS_KEYS.USER_INFO]) {
+          return null
+        }
+
+        return this.$store.state.settings[SETTINGS_KEYS.USER_INFO].avatar
+      },
+      isOnline() {
+        return this.$store.state.connectivity.isOnline
+      },
+      classes() {
+        return {
+          'm-logbox__offline': !this.isOnline,
+        }
+      },
+    }, mapSettingsAsComputed({
+      language: SETTINGS_KEYS.LANGUAGE,
+    })),
+    methods: {
+      account() {
+        this.openGoAnkama('profile')
+      },
+      help() {
+        this.$store.dispatch('openExternal', 'https://support.ankama.com')
+      },
+      logout() {
+        this.$store.dispatch('logout')
+      },
+      openGoAnkama(keyword) {
+        this.$store.dispatch('goAnkamaOpen', keyword)
+      },
+    },
+  })
+</script>
+
+<style>
+  .m-logbox {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+  .m-logbox--avatar {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: calc(var(--header-height) - 26px);
+    height: calc(var(--header-height) - 26px);
+    border: 1px solid var(--color-white-10);
+  }
+
+  .m-logbox--avatar-offline {
+    display: none;
+    padding-left: 3px;
+    background: var(--color-punch);
+  }
+
+  .m-logbox--avatar-offline .c-zaap-icon {
+    margin-left: 0;
+  }
+
+  .m-logbox--nickname {
+    display: inline-block;
+    padding-left: 25px;
+  }
+
+  .m-logbox--offline-label {
+    display: none;
+    padding-left: 25px;
+    color: var(--color-punch);
+    margin-top: -29px;
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-dosis-bold);
+  }
+
+  .m-logbox__offline .m-logbox--nickname {
+    margin-top: -4px;
+  }
+
+  .m-logbox__offline .m-logbox--offline-label {
+    display: block;
+  }
+
+  .m-logbox__offline .m-logbox--avatar-offline {
+    display: block;
+  }
+</style>

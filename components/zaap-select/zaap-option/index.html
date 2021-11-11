@@ -1,0 +1,99 @@
+<template>
+  <label class="c-zaap-option" @click="$parent.toggleDropdown" :class="{ 'c-zaap-option__disabled': disabled }">
+    <input type="radio" v-model="selectValue" :value="value" :disabled="isDisabled" :name="selectUid"
+           @keyup.enter="$parent.toggleDropdown" @click="$parent.toggleDropdown" @focus="focus"
+           @blur="blur" ref="option" class="c-zaap-option--input">
+    <span class="c-zaap-option--label">
+      <slot></slot>
+    </span>
+  </label>
+</template>
+
+<script>
+  VueComponent(this, 'zaapOption', {
+    props: {
+      value: {},
+      disabled: Boolean,
+    },
+    data() {
+      return {
+        selectUid: null,
+      }
+    },
+    computed: {
+      selectValue: {
+        get() {
+          return this.select.value
+        },
+        set(value) {
+          this.select.$emit('input', value)
+        },
+      },
+      isDisabled() {
+        return this.disabled || this.select.disabled
+      },
+      select() {
+        let parent = this.$parent
+        while (parent) {
+          if (parent.$options.componentName !== 'zaapSelect') {
+            parent = parent.$parent
+          } else {
+            return parent
+          }
+        }
+        return false
+      },
+    },
+    methods: {
+      focus() {
+        this.$parent.focused = true
+      },
+      blur() {
+        this.$parent.focused = false
+      },
+    },
+    mounted() {
+      this.selectUid = this.$parent._uid
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-option {
+    position: relative;
+    display: block;
+  }
+
+  .c-zaap-option:not(:last-child) {
+    border-bottom: 1px solid var(--color-white-20);
+  }
+
+  .c-zaap-option--input {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+
+  .c-zaap-option--label {
+    display: block;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 30px 0 15px;
+  }
+
+  .c-zaap-option:not(.c-zaap-option__disabled) .c-zaap-option--label:hover,
+  .c-zaap-select:not(:hover) .c-zaap-option--input:checked + .c-zaap-option--label {
+    background: var(--color-lighten-primary);
+  }
+
+  .c-zaap-option:not(.c-zaap-option__disabled) .c-zaap-option--label:active {
+    background: var(--color-white-30);
+  }
+
+  .c-zaap-option__disabled .c-zaap-option--label {
+    opacity: 0.5;
+  }
+</style>

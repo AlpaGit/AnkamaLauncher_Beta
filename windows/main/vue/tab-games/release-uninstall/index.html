@@ -1,0 +1,82 @@
+<template>
+  <zaap-popup v-if="showPopup" @close="closeReleaseUninstallPopup" width="520px" height="320px">
+    <div class="m-release-uninstall">
+      <h1 class="m-release-uninstall--game-name">
+        {{ release.fullName }}
+      </h1>
+      <h2 class="m-release-uninstall--subtitle">
+        {{ $t('releaseUninstall.uninstalling') }}
+      </h2>
+
+      <p>
+        {{ $t('releaseUninstall.sentence', { releaseName: release.fullName }) }}
+      </p>
+
+      <div class="m-release-uninstall--uninstall-buttons">
+        <zaap-button @click="closeReleaseUninstallPopup" :disable="uninstalling" size="medium">
+          {{ $t('releaseUninstall.cancelButton') }}
+        </zaap-button>
+
+        <zaap-button type="filled" @click="uninstall" :disable="uninstalling" size="medium">
+          {{ $t('releaseUninstall.uninstallButton') }}
+        </zaap-button>
+      </div>
+    </div>
+  </zaap-popup>
+</template>
+<script>
+  VueComponent(this, 'release-uninstall', {
+    data: {
+      uninstalling: false,
+    },
+    computed: {
+      release() {
+        return this.$store.getters.displayedRelease
+      },
+      showPopup() {
+        return this.release && this.$store.state.display.showReleaseUninstallPopup
+      },
+    },
+    methods: {
+      uninstall() {
+        this.uninstalling = true
+        Vue.nextTick(() => {
+          this.$store.dispatch('uninstallRelease', {
+            release: this.release,
+          })
+        })
+      },
+      closeReleaseUninstallPopup() {
+        this.$store.dispatch('closeReleaseUninstallPopup')
+      },
+    },
+  })
+</script>
+<style>
+  .m-release-uninstall {
+    position: relative;
+    height: 100%;
+    padding: 50px;
+  }
+
+  .m-release-uninstall--game-name {
+    font: var(--font-weight-dosis-bold) var(--font-size-default) var(--font-family-dosis);
+    color: var(--color-primary);
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .m-release-uninstall--subtitle {
+    font: var(--font-title);
+    margin-bottom: 30px;
+  }
+
+  .m-release-uninstall--uninstall-buttons {
+    --color-primary: var(--color-flush-mahogany);
+    --color-lighten-primary: var(--color-punch);
+
+    position: absolute;
+    right: 50px;
+    bottom: 30px;
+  }
+</style>

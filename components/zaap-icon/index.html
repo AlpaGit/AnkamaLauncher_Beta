@@ -1,0 +1,37 @@
+<template>
+  <div class="c-zaap-icon" v-html="svgContent">
+  </div>
+</template>
+
+<script src="./icons/index.js"></script>
+<script>
+  VueComponent(this, 'zaapIcon', {
+    props: {
+      icon: {
+        type: String,
+        required: true,
+        validator: (value) => {
+          // eslint-disable-next-line no-undef
+          return zaapIcons.hasOwnProperty(value)
+        },
+      },
+    },
+    computed: {
+      svgContent() {
+        // eslint-disable-next-line no-undef
+        return zaapIcons[this.icon]
+      },
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-icon {
+    display: inline-block;
+  }
+
+  .c-zaap-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+</style>

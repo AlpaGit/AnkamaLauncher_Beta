@@ -1,0 +1,156 @@
+<link rel="import" href="./zaap-dropdown-item/index.html">
+
+<template>
+  <div class="c-zaap-dropdown" :class="classes" ref="clickOutside">
+    <div class="c-zaap-dropdown--label" @click="toggleDropdown">
+      <slot name="label"></slot>
+    </div>
+    <div class="c-zaap-dropdown--items">
+      <slot></slot>
+    </div>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapDropdown', {
+    props: {
+      openUp: Boolean,
+    },
+    data() {
+      return {
+        dropdownVisible: false,
+      }
+    },
+    computed: {
+      classes() {
+        return {
+          'c-zaap-dropdown__dropdown-open-up': this.openUp,
+          'c-zaap-dropdown__dropdown-visible': this.dropdownVisible,
+        }
+      },
+    },
+    methods: {
+      hideDropdown() {
+        this.dropdownVisible = false
+      },
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible
+      },
+      clickOutsideHandler(e) {
+        if (!this.$refs.clickOutside.contains(e.target)) {
+          this.hideDropdown()
+        }
+        e.stopPropagation()
+      },
+    },
+    mounted() {
+      document.documentElement.addEventListener('click', this.clickOutsideHandler, false)
+    },
+    destroyed() {
+      document.documentElement.removeEventListener('click', this.clickOutsideHandler, false)
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-dropdown {
+    position: relative;
+    display: inline-block;
+    height: 40px;
+    white-space: nowrap;
+    border-radius: 4px;
+    transition: background 150ms, box-shadow 150ms;
+  }
+
+  .c-zaap-dropdown::before,
+  .c-zaap-dropdown::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 19px;
+    right: 15px;
+    height: 2px;
+    width: 7px;
+    background: var(--color-white);
+    pointer-events: none;
+  }
+
+  .c-zaap-dropdown::before {
+    transform: rotate(45deg) translate(-3px, 3px);
+  }
+
+  .c-zaap-dropdown::after {
+    transform: rotate(-45deg);
+  }
+
+  .c-zaap-dropdown.c-zaap-dropdown__dropdown-visible,
+  .c-zaap-dropdown:hover {
+    background: var(--color-primary);
+  }
+
+  .c-zaap-dropdown__dropdown-visible {
+    box-shadow: var(--box-shadow-default);
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .c-zaap-dropdown .c-zaap-icon {
+    width: 16px;
+    height: 16px;
+    margin-left: -2px;
+    margin-right: 9px;
+    filter: var(--drop-shadow-default);
+    transform: translateY(3px);
+  }
+
+  .c-zaap-dropdown .c-zaap-icon svg * {
+    fill: var(--color-white);
+  }
+
+  .c-zaap-dropdown--label {
+    font: var(--font-weight-dosis-semibold) var(--font-size-default) var(--font-family-dosis);
+    height: calc(var(--header-height) - 10px);
+    line-height: calc(var(--header-height) - 10px);
+    padding: 0 35px 0 15px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transition: color 150ms;
+  }
+
+  .c-zaap-dropdown--label * {
+    transition: color 150ms;
+  }
+
+  .c-zaap-dropdown.c-zaap-dropdown__dropdown-visible .c-zaap-dropdown--label,
+  .c-zaap-dropdown:hover .c-zaap-dropdown--label,
+  .c-zaap-dropdown.c-zaap-dropdown__dropdown-visible .c-zaap-dropdown--label *,
+  .c-zaap-dropdown:hover .c-zaap-dropdown--label * {
+    color: var(--color-white) !important;
+  }
+
+  .c-zaap-dropdown--items {
+    float: left;
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+    background: var(--color-primary);
+  }
+
+  .c-zaap-dropdown__dropdown-visible .c-zaap-dropdown--items {
+    height: auto;
+    overflow: auto;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    box-shadow: var(--box-shadow-default);
+    z-index: 5;
+  }
+
+  .c-zaap-dropdown__dropdown-visible.c-zaap-dropdown__dropdown-open-up {
+    border-radius: 0 0 3px 3px;
+  }
+
+  .c-zaap-dropdown__dropdown-open-up .c-zaap-dropdown--items {
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.3);
+    transform: translateY(calc(-100% - 40px));
+  }
+</style>

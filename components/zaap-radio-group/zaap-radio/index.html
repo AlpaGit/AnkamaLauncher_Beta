@@ -1,0 +1,129 @@
+<template>
+  <!-- This outer div avoid elements on the right of the radio -->
+  <div>
+    <label class="c-zaap-radio" :class="{ 'c-zaap-radio__disabled': isDisabled }" @mouseup="blur">
+      <input type="radio" v-model="groupValue" :value="value" :disabled="isDisabled" :name="radioGroupUid"
+             class="c-zaap-radio--input">
+      <span class="c-zaap-radio--radio"></span>
+      <slot></slot>
+    </label>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'zaapRadio', {
+    props: {
+      value: {},
+      disabled: Boolean,
+    },
+    data() {
+      return {
+        radioGroupUid: null,
+      }
+    },
+    computed: {
+      groupValue: {
+        get() {
+          return this.select.value
+        },
+        set(value) {
+          this.select.$emit('input', value)
+        },
+      },
+      isDisabled() {
+        return this.disabled || this.select.disabled
+      },
+      select() {
+        let parent = this.$parent
+        while (parent) {
+          if (parent.$options.componentName !== 'zaapRadioGroup') {
+            parent = parent.$parent
+          } else {
+            return parent
+          }
+        }
+        return false
+      },
+    },
+    methods: {
+      blur() {
+        setTimeout(() => {
+          this.$el.querySelector('input').blur()
+        })
+      },
+    },
+    mounted() {
+      this.radioGroupUid = this.$parent._uid
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-radio {
+    --c-zaap-radio--translate-y: 5px;
+  }
+
+  .c-zaap-radio {
+    position: relative;
+    display: block;
+  }
+
+  .c-zaap-radio__disabled {
+    opacity: 0.2;
+  }
+
+  .c-zaap-radio {
+    display: inline-block;
+    font: var(--font-label);
+    margin-bottom: 7px;
+  }
+
+  .c-zaap-radio--input {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    height: 0;
+    width: 0;
+    opacity: 0;
+  }
+
+  .c-zaap-radio--radio {
+    display: inline-block;
+    height: 21px;
+    width: 21px;
+    background-color: var(--color-black-60);
+    border: 1px solid transparent;
+    border-radius: 21px;
+    margin: 0 10px 0 0;
+    transform: translateY(var(--c-zaap-radio--translate-y));
+    transition: border 150ms;
+  }
+
+  .c-zaap-radio--radio::after {
+    content: "";
+    display: block;
+    margin: 5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 21px;
+    filter: var(--drop-shadow-default);
+    transition: background-color 150ms;
+  }
+
+  .c-zaap-radio:not(.c-zaap-radio__disabled):hover .c-zaap-radio--input:not(:checked) + .c-zaap-radio--radio,
+  .c-zaap-radio:not(.c-zaap-radio__disabled) .c-zaap-radio--input:not(:checked):focus + .c-zaap-radio--radio {
+    border-color: var(--color-white-50);
+  }
+
+  .c-zaap-radio:not(.c-zaap-radio__disabled):active .c-zaap-radio--radio {
+    transform: translateY(var(--c-zaap-radio--translate-y)) scale(0.9);
+  }
+
+  .c-zaap-radio--input:checked + .c-zaap-radio--radio {
+    background-color: var(--color-primary);
+  }
+
+  .c-zaap-radio--input:checked + .c-zaap-radio--radio::after {
+    background-color: var(--color-white);
+  }
+</style>

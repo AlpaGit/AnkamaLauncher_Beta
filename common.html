@@ -1,0 +1,227 @@
+<style>
+  /**
+   * Fonts
+   */
+  @import url("node_modules/raleway-webfont/raleway.css");
+  @import url("node_modules/typeface-dosis/index.css");
+
+  /**
+   * Variables
+   */
+  :root {
+    /* Colors */
+    --color-white: #ffffff;
+    --color-fire-bush: #e69b2f;
+    --color-tahiti-gold: #e2890b;
+    --color-flush-mahogany: #c93536;
+    --color-punch: #dc3a3a;
+    --color-bossanova: #522753;
+    --color-black-pearl: #040624;
+    --color-black: #000000;
+    --color-white-10: rgba(255, 255, 255, 0.1);
+    --color-white-20: rgba(255, 255, 255, 0.2);
+    --color-white-30: rgba(255, 255, 255, 0.3);
+    --color-white-50: rgba(255, 255, 255, 0.5);
+    --color-white-80: rgba(255, 255, 255, 0.8);
+    --color-bossanova-60: rgba(82, 39, 83, 0.6);
+    --color-black-pearl-50: rgba(8, 8, 14, 0.5);
+    --color-black-pearl-80: rgba(8, 8, 14, 0.8);
+    --color-black-10: rgba(0, 0, 0, 0.1);
+    --color-black-30: rgba(0, 0, 0, 0.3);
+    --color-black-40: rgba(0, 0, 0, 0.4);
+    --color-black-60: rgba(0, 0, 0, 0.6);
+
+    /* Generic names for primary color */
+    --color-primary: var(--color-tahiti-gold);
+    --color-lighten-primary: var(--color-fire-bush);
+
+    /* Font families */
+    --font-family-dosis: Dosis, sans-serif;
+    --font-family-raleway: Raleway, sans-serif;
+
+    /* Font size */
+    --font-size-title: 30px;
+    --font-size-subtitle: 20px;
+    --font-size-bigger: 16px;
+    --font-size-default: 14px;
+    --font-size-small: 12px;
+
+    /* Font weight */
+    --font-weight-dosis-regular: 400;
+    --font-weight-dosis-medium: 500;
+    --font-weight-dosis-semibold: 600;
+    --font-weight-dosis-bold: 700;
+    --font-weight-raleway-regular: 400;
+    --font-weight-raleway-medium: 500;
+    --font-weight-raleway-semibold: 600;
+    --font-weight-raleway-bold: 700;
+
+    /* Fonts */
+    --font-title: var(--font-weight-raleway-bold) var(--font-size-title) var(--font-family-raleway);
+    --font-subtitle: var(--font-weight-dosis-semibold) var(--font-size-subtitle) var(--font-family-dosis);
+    --font-bigger: var(--font-weight-dosis-bold) var(--font-size-bigger) var(--font-family-dosis);
+    --font-default: var(--font-weight-raleway-medium) var(--font-size-default) var(--font-family-raleway);
+    --font-label: var(--font-weight-raleway-medium) var(--font-size-default) var(--font-family-raleway);
+
+    /* Shadows */
+    --box-shadow-default: 0 15px 40px rgba(0, 0, 0, 0.3);
+    --text-shadow-default: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --drop-shadow-default: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+
+    /* Textures */
+    --texture-noise: url(data:image/png;base64,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);
+
+    /* Global vars */
+    --header-height: 50px;
+    --aside-width: 70px;
+  }
+
+  /**
+   * Font weight adjustments for mac
+   */
+  .m-app__darwin {
+    --font-weight-dosis-regular: 300;
+    --font-weight-dosis-medium: 400;
+    --font-weight-dosis-semibold: 500;
+    --font-weight-dosis-bold: 600;
+    --font-weight-raleway-regular: 300;
+    --font-weight-raleway-medium: 400;
+    --font-weight-raleway-semibold: 500;
+    --font-weight-raleway-bold: 600;
+  }
+
+  /**
+   * Resets & global styles
+   */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    font-variant-numeric: lining-nums;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+
+  html {
+    overflow: hidden;
+  }
+
+  body {
+    padding: 0;
+    margin: 0;
+    line-height: 1.5 !important;
+    cursor: default;
+  }
+
+  body,
+  button {
+    color: var(--color-white);
+    font: var(--font-default);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+  }
+
+  button {
+    display: block;
+    border: none;
+    background: none;
+    padding: 0;
+  }
+
+  input:focus,
+  button:focus {
+    outline: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0 0 15px;
+  }
+
+  h1 {
+    font: var(--font-subtitle);
+  }
+
+  a {
+    color: var(--color-primary);
+  }
+
+  ::selection {
+    color: var(--color-white);
+    background: var(--color-primary);
+  }
+
+  /**
+   * Allows us to disable all animations in a block
+   * Useful to re-trigger animation via JS
+   */
+  .no-animation,
+  .no-animation * {
+    animation: none !important;
+  }
+
+  /**
+   * Squares separator
+   */
+  .separator {
+    --separator-size: 10px;
+    --separator-spacing: 4px;
+    --separator-color: var(--color-white-30);
+
+    display: block;
+    border: none;
+    margin: 30px auto;
+    pointer-events: none;
+    text-align: center;
+    width: var(--separator-size);
+    height: var(--separator-size);
+  }
+
+  .separator::after {
+    content: "";
+    display: inline-block;
+    border: none;
+    background: var(--separator-color);
+    width: var(--separator-size);
+    height: var(--separator-size);
+    transform: rotate(45deg);
+    opacity: 0.8;
+    pointer-events: none;
+    box-shadow:
+        calc(-1 * (var(--separator-size) + var(--separator-spacing))) calc(var(--separator-size) + var(--separator-spacing)) 0 var(--separator-color),
+        calc(var(--separator-size) + var(--separator-spacing)) calc(-1 * (var(--separator-size) + var(--separator-spacing))) 0 var(--separator-color);
+  }
+
+  /**
+   * Forms
+   */
+  .form-group {
+    margin: 20px 0;
+  }
+
+  .form-group p {
+    margin: 0 0 10px;
+  }
+
+  .form-group--title {
+    display: block;
+    font: var(--font-bigger);
+    font-weight: var(--font-weight-dosis-bold);
+    line-height: 18px;
+    margin: 0 0 7px;
+    color: var(--color-white);
+  }
+
+  .form-group:last-child,
+  .form-group:last-child > :last-child {
+    margin-bottom: 0;
+  }
+</style>

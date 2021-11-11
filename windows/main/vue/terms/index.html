@@ -1,0 +1,52 @@
+<template>
+  <div class="m-terms">
+    <div v-for="section in terms.sections" :id="section.iNumber">
+      <h1>{{ section.title }}</h1>
+      <p v-html="section.content"></p>
+    </div>
+  </div>
+</template>
+<script>
+  VueComponent(this, 'terms', {
+    methods: {
+      loadTerms() {
+        this.$store.dispatch('termsLoad')
+      },
+    },
+    computed: {
+      terms() {
+        return this.$store.state.terms.content
+      },
+      language() {
+        return this.$store.state.settings[SETTINGS_KEYS.LANGUAGE]
+      },
+    },
+    mounted() {
+      this.loadTerms()
+    },
+    watch: {
+      language() {
+        this.loadTerms()
+      },
+      terms() {
+        this.$nextTick(() => {
+          this.$el.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', (e) => {
+              e.preventDefault()
+              this.$store.dispatch('openExternal', link.href)
+            })
+          })
+        })
+      },
+    },
+  })
+</script>
+<style>
+  .m-terms ul {
+    padding: 15px 30px;
+  }
+
+  .m-terms [style*="text-align:justify"] {
+    text-align: left !important;
+  }
+</style>

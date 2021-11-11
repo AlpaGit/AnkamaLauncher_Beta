@@ -1,0 +1,52 @@
+<template>
+  <button class="c-zaap-dropdown-item"
+          @click="click"
+          :class="{ 'c-zaap-dropdown-item__disabled': disabled }"
+          type="button">
+    <slot></slot>
+  </button>
+</template>
+
+<script>
+  VueComponent(this, 'zaapDropdownItem', {
+    props: {
+      disabled: Boolean,
+    },
+    methods: {
+      click() {
+        this.$parent.toggleDropdown()
+        this.$emit('click')
+      },
+    },
+  })
+</script>
+
+<style>
+  .c-zaap-dropdown-item {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 40px;
+    font: var(--font-weight-dosis-semibold) var(--font-size-default) var(--font-family-dosis);
+    text-align: left;
+    padding: 0 20px 0 15px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .c-zaap-dropdown-item:not(:last-child) {
+    border-bottom: 1px solid var(--color-white-20);
+  }
+
+  .c-zaap-dropdown-item:not(.c-zaap-dropdown-item__disabled):hover {
+    background: var(--color-lighten-primary);
+    border-bottom-color: transparent;
+  }
+
+  .c-zaap-dropdown-item .c-zaap-icon {
+    margin-top: -2px;
+  }
+
+  .c-zaap-dropdown-item__disabled {
+    opacity: 0.5;
+  }
+</style>

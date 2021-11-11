@@ -1,0 +1,67 @@
+<script src="../../helpers/setGlobalLogger.js"></script>
+<script>
+  /**
+   * Global variables available across the UI.
+   */
+  const remote = require('electron').remote
+  const buildConfig = remote.require('lib/buildConfig')
+  const Vue = require(`vue/dist/vue${buildConfig.isBuild ? '.min' : ''}.js`)
+
+  // eslint-disable-next-line no-unused-vars
+  const ipcRenderer = require('electron').ipcRenderer
+  // eslint-disable-next-line no-unused-vars
+  const remoteCommunication = remote.require('lib/remoteCommunication')
+
+  // eslint-disable-next-line no-unused-vars
+  const SETTINGS_KEYS = remote.require('lib/settings').KEYS
+  // eslint-disable-next-line no-unused-vars
+  const mapSettingsAsComputed = require('./lib/mapSettingsAsComputed')
+
+  /**
+   * Plug in anything you want in Vue.js.
+   */
+  Vue.use(require('vuex'))
+  Vue.use(require('vue-electron'))
+</script>
+<script src="../../helpers/vue.js"></script>
+<link rel="import" href="/components/index.html">
+<link rel="import" href="/windows/main/vue/app.html">
+<script>
+  const i18n = require('./lib/i18n')
+
+  /**
+   * Bootstrap the application.
+   */
+  new Vue({
+    store: require('./lib/store'),
+    mounted() {
+      this.$nextTick(() => {
+        require('imagesloaded')('#container', {background: true}, () => {
+          console.log('main window: loaded')
+          const container = document.getElementById('container')
+          container.classList.add('show')
+
+          // Remove loading element after CSS transition
+          const removeLoading = () => {
+            document.getElementById('loading').remove()
+            // eslint-disable-next-line no-undef
+            ipcRenderer.send(remoteCommunication.CHANNELS.MAIN_WINDOW_FULLY_LOADED)
+            remote.require('windows/main/electron').dispatchAllIpcEvents()
+            container.removeEventListener('transitionend', removeLoading)
+          }
+          container.addEventListener('transitionend', removeLoading)
+        })
+      })
+    },
+    i18n,
+  }).$mount('#container')
+
+  /**
+   * Disable animations (only useful for integration tests purposes)
+   */
+  const animate = remote.require('lib/app').animate
+  const noAnimation = require('../../helpers/noAnimation')
+  if (!animate) {
+    noAnimation.disableAnimations(document.head)
+  }
+</script>

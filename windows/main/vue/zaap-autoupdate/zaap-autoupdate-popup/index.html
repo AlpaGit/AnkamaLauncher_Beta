@@ -1,0 +1,81 @@
+<template>
+  <div class="m-zaap-autoupdate">
+    <zaap-popup v-if="isReady" class="m-zaap-autoupdate--popup" width="400px">
+      <div class="m-zaap-autoupdate--popup-inner">
+        <h1 class="m-zaap-autoupdate--title">
+          {{ $t('zaapAutoUpdate.updateRequired') }}
+        </h1>
+        <p class="m-zaap-autoupdate--label">
+          {{ $t('zaapAutoUpdate.willRestartAutomatically') }}
+        </p>
+        <p class="m-zaap-autoupdate--countdown" v-if="countdown > 0">
+          {{ $t('zaapAutoUpdate.restartIn', {countdown}) }}
+        </p>
+
+        <zaap-button type="filled" @click="quitAndInstall()" :disabled="countdown <= 0">
+          <template v-if="countdown > 0">{{ $t('zaapAutoUpdate.restartNow') }}</template>
+          <template v-else>{{ $t('zaapAutoUpdate.restarting') }}</template>
+        </zaap-button>
+      </div>
+    </zaap-popup>
+  </div>
+</template>
+
+<script>
+  /* global ipcRenderer, remoteCommunication */
+  VueComponent(this, 'zaap-autoupdate-popup', {
+    data: {
+      countdown: 10,
+    },
+    computed: {
+      isReady() {
+        return this.$store.state.autoUpdater.isReady
+      },
+    },
+    methods: {
+      quitAndInstall() {
+        this.countdown = 0
+        ipcRenderer.send(remoteCommunication.CHANNELS.ZAAP_AUTO_UPDATER_INSTALL)
+      },
+    },
+    watch: {
+      isReady() {
+        if (!this.isReady) {
+          return false
+        }
+
+        setInterval(() => {
+          if (this.countdown <= 0) {
+            this.quitAndInstall()
+          } else {
+            this.countdown -= 1
+          }
+        }, 1000)
+      },
+    },
+  })
+</script>
+
+<style>
+  .m-zaap-autoupdate--popup {
+    top: calc(-1 * var(--m-window-controls-height));
+    background: rgba(0, 0, 0, 0.9);
+  }
+
+  .m-zaap-autoupdate .c-zaap-popup--close {
+    display: none;
+  }
+
+  .m-zaap-autoupdate--popup-inner {
+    padding: 30px 20px 10px;
+    text-align: center;
+  }
+
+  .m-zaap-autoupdate--title {
+    font: var(--font-title);
+  }
+
+  .m-zaap-autoupdate--label {
+    padding: 20px;
+  }
+</style>

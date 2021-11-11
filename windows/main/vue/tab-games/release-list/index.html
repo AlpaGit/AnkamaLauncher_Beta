@@ -1,0 +1,73 @@
+<link rel="import" href="./release-entry/index.html">
+
+<template>
+  <div class="m-release-list-bar">
+    <ul>
+      <release-entry v-for="release in releases" :key="release.gameUid + release.name"
+                     :release="release" :active="isActive(release)"
+                     v-if="release.information.default.style"></release-entry>
+    </ul>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'release-list', {
+    computed: {
+      selected() {
+        return this.$store.state.display.releaseView
+      },
+      releases() {
+        return Object.values(this.$store.state.games)
+          .sort((gameA, gameB) => {
+            return gameA.order - gameB.order
+          })
+          .map((game) => {
+            // Always put main release first
+            return Object.values(game.releases).sort((releaseA, releaseB) => {
+              const releaseAWeight = releaseA.name === 'main' ? '-1' : releaseA.name
+              const releaseBWeight = releaseB.name === 'main' ? '-1' : releaseB.name
+              return releaseAWeight.localeCompare(releaseBWeight)
+            })
+          })
+          .reduce((releases, gameReleases) => {
+            return releases.concat(gameReleases)
+          }, [])
+          .filter((release) => {
+            if (release.name === 'main') {
+              return true
+            }
+
+            if (this.$store.state.games[release.gameUid].releases.length === 1) {
+              return true
+            }
+
+            const mainRelease = this.$store.state.games[release.gameUid].releases.main
+            if (!mainRelease) {
+              return false
+            }
+
+            return mainRelease.settings && mainRelease.settings.values.displayAllReleases
+          })
+      },
+    },
+    mounted() {
+      this.$store.dispatch('syncReleasesFromRegistry')
+    },
+    methods: {
+      isActive(release) {
+        return this.selected.gameUid === release.gameUid && this.selected.name === release.name
+      },
+    },
+  })
+</script>
+
+<style>
+  .m-release-list-bar {
+    display: block;
+    width: var(--aside-width);
+    height: 100%;
+    background: var(--color-black-30);
+    z-index: 2;
+    padding: 7px;
+  }
+</style>

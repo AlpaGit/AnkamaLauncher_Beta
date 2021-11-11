@@ -1,0 +1,192 @@
+<template>
+  <div class="m-window-controls" :class="classes">
+    <div class="m-drag" @dblclick="maximize"></div>
+
+    <div class="m-window-controls--info">
+      <template v-if="environment !== 'production'">
+        {{ environment }}
+      </template>
+    </div>
+
+    <div class="m-window-controls--product-name">
+      {{ productName }}
+    </div>
+
+    <ul class="m-window-controls--buttons" v-if="!isDarwin">
+      <li>
+        <button class="m-window-controls--settings m-window-controls--button" @click.stop="showSettingsScreen" type="button"
+                :title="$t('zaapSettings.title')">
+          <zaap-icon icon="gear"></zaap-icon>
+        </button>
+      </li>
+      <li>
+        <button class="m-window-controls--minimize m-window-controls--button" @click.stop="minimize" type="button">
+          <zaap-icon icon="minimize"></zaap-icon>
+        </button>
+      </li>
+      <li>
+        <button class="m-window-controls--maximize m-window-controls--button" @click.stop="maximize" type="button">
+          <zaap-icon icon="maximize"></zaap-icon>
+        </button>
+      </li>
+      <li>
+        <button class="m-window-controls--close m-window-controls--button" @click.stop="close" type="button">
+          <zaap-icon icon="close"></zaap-icon>
+        </button>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<script>
+  VueComponent(this, 'window-controls', {
+    computed: Object.assign({
+      productName() {
+        return this.$store.state.buildConfig.productName.replace(/\s*\[.*]/, '')
+      },
+      environment() {
+        return this.$store.state.buildConfig.environment
+      },
+      windowIsFocused() {
+        return this.$store.state.window.isFocused
+      },
+      isDarwin() {
+        return process.platform === 'darwin' || process.env.SIMULATE_DARWIN
+      },
+      classes() {
+        return {
+          'm-window-controls__focused': this.windowIsFocused,
+          'm-window-controls__darwin': this.isDarwin,
+        }
+      },
+    }, mapSettingsAsComputed({
+      atClose: SETTINGS_KEYS.AT_CLOSE,
+      atMinimize: SETTINGS_KEYS.AT_MINIMIZE,
+    })),
+    methods: {
+      getWindow() {
+        return remote.require('windows/main/electron')
+      },
+      showSettingsScreen() {
+        this.$store.dispatch('openZaapSettingsPopup')
+      },
+      minimize() {
+        if (this.atMinimize === 'tray') {
+          this.getWindow().hide()
+        } else {
+          this.getWindow().minimize()
+        }
+      },
+      maximize() {
+        this.getWindow().maximize()
+      },
+      close() {
+        if (this.atClose === 'quit') {
+          this.$store.dispatch('quit')
+        } else {
+          this.getWindow().hide()
+        }
+      },
+    },
+  })
+</script>
+
+<style>
+  :root {
+    --m-window-controls-height: 22px;
+  }
+
+  .m-window-controls {
+    position: relative;
+    height: var(--m-window-controls-height);
+    width: 100%;
+    color: var(--color-white);
+    background-color: var(--color-black);
+    z-index: 1;
+  }
+
+  .m-drag {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    left: 3px;
+    height: var(--m-window-controls-height);
+    -webkit-app-region: drag;
+  }
+
+  .m-window-controls--product-name,
+  .m-window-controls--info {
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    line-height: var(--m-window-controls-height);
+  }
+
+  .m-window-controls:not(.m-window-controls__focused) .m-window-controls--product-name {
+    opacity: 0.5;
+  }
+
+  .m-window-controls--info {
+    position: absolute;
+    top: 1px;
+    left: 0;
+    text-transform: uppercase;
+    padding: 0 8px;
+    opacity: 0.5;
+  }
+
+  .m-window-controls.m-window-controls__darwin .m-window-controls--info {
+    right: 0;
+    left: auto;
+  }
+
+  .m-window-controls--product-name {
+    text-align: center;
+  }
+
+  .m-window-controls .m-window-controls--buttons {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    padding: 0;
+    list-style: none;
+    -webkit-app-region: no-drag;
+  }
+
+  .m-window-controls .m-window-controls--button {
+    position: relative;
+    width: calc(var(--m-window-controls-height) + 6px);
+    height: var(--m-window-controls-height);
+    padding: 4px;
+    overflow: hidden;
+    transition: background 150ms;
+  }
+
+  .m-window-controls .m-window-controls--button:focus {
+    outline: none;
+  }
+
+  .m-window-controls .m-window-controls--button svg * {
+    fill: var(--color-white-80);
+    transition: fill 150ms;
+  }
+
+  .m-window-controls .m-window-controls--button:hover {
+    background: var(--color-white-30);
+  }
+
+  .m-window-controls .m-window-controls--settings svg {
+    transition: transform 300ms;
+  }
+  .m-window-controls .m-window-controls--settings:hover svg {
+    transform: rotate(62deg);
+  }
+
+  .m-window-controls .m-window-controls--close:hover {
+    background: var(--color-punch);
+  }
+
+  .m-window-controls:not(.m-window-controls__focused):not(:hover) .m-window-controls--button {
+    opacity: 0.5;
+  }
+</style>

@@ -1,0 +1,188 @@
+﻿{
+  "zaapAutoUpdate": {
+    "updateRequired": "Update required",
+    "willRestartAutomatically": "Ankama Launcher will restart automatically to install the update.",
+    "restartIn": "Restarting in {countdown} seconds…",
+    "restartNow": "Restart",
+    "restarting": "Restarting…"
+  },
+  "zaapSettings": {
+    "title": "Settings",
+    "tabs": {
+      "general": {
+        "title": "General Options",
+        "language": "Language",
+        "launchAtStartup": "Launch Ankama Launcher when computer starts up",
+        "minimizeAtReleaseLaunch": "Minimize to system tray when launching a game",
+        "preRelease": "Pre-Release Mode",
+        "atClose": {
+          "title": "When closing Ankama Launcher",
+          "tray": "Minimize to the system tray",
+          "quit": "Exit"
+        },
+        "atMinimize": {
+          "title": "When minimizing Ankama Launcher",
+          "taskbar": "Minimize to the taskbar",
+          "tray": "Minimize to the system tray"
+        }
+      },
+      "about": {
+        "title": "About",
+        "version": "Version"
+      },
+      "terms": {
+        "title": "Terms of Use"
+      },
+      "logs": {
+        "title": "Logs",
+        "open": "Open the Log Directory"
+      }
+    }
+  },
+  "header": {
+    "menu": {
+      "games": "Games"
+    }
+  },
+  "logbox": {
+    "offline": "Offline",
+    "account": "My Account",
+    "help": "Support",
+    "forum": "Beta Forum",
+    "logout": "Log Out"
+  },
+  "release": {
+    "error": {
+      "cannotInstallInANonEmptyFolder": "The selected folder is not empty",
+      "cannotInstallReadWritePermissions": "You do not have read or write permission for this folder",
+      "cannotInstallNotEnoughSpace": "Not enough free space",
+      "cannotCreateDestinationFolder": "Unable to create the folder",
+      "cannotMoveNotInstalled": "The game is not yet installed; wait before moving it",
+      "cannotMoveWhileMoving": "The game is already being moved",
+      "cannotMoveSameFolder": "The target directory is the same as the current directory",
+      "cannotMoveReadWritePermissions": "You do not have read or write permission for this folder",
+      "cannotMoveWhileUpdating": "The game is updating",
+      "cannotMoveWhileRunning": "The game has started",
+      "cannotMoveNotEnoughSpace": "Not enough free space",
+      "cannotUpdateNoLocation": "Destination not specified",
+      "cannotUpdateOffline": "Your computer is not connected to Internet",
+      "cannotUpdateGameIsRunning": "The game is already running",
+      "cannotUpdateAlreadyRunning": "An update is in progress",
+      "cannotUpdateReleaseIsMoving": "The game is being moved",
+      "cannotStartNotInstalled": "The game is not installed",
+      "cannotStartWhileUpdating": "An update is in progress",
+      "cannotStartUpdateAvailable": "A update is available",
+      "cannotStartMaxInstancesReached": "The maximum number of games is already running",
+      "cannotStartReleaseIsMoving": "The game is being moved",
+      "cannotUpdateCytrusVersionNotHandled": "Game's deployed version is not handled by this Ankama Launcher's version"
+    }
+  },
+  "releaseSettings": {
+    "title": "{releaseName} Settings",
+    "tabs": {
+      "general": {
+        "title": "General Options",
+        "autoUpdate": "Automatic updates",
+        "displayAllReleases": "Show other versions ({releaseList})",
+        "repairTitle": "Repairs",
+        "repairExplanation": "If the game does not function properly, running Repair can resolve issues by verifying the integrity of the game folders on your computer.",
+        "repair": "Repair",
+        "toolsTitle": "Tools",
+        "toolsExplanation": "Go to the game folder or log folder. Attach the log files to your bug reports.",
+        "openLogs": "See the Logs",
+        "openReleaseFolder": "Open the Game Folder",
+        "uninstallTitle": "Uninstall",
+        "uninstallExplanation": "Delete the install folder and game shortcuts.",
+        "uninstall": "Uninstall {fullGameName}"
+      },
+      "move": {
+        "title": "Change Directory",
+        "moveButton": "Move",
+        "space": {
+          "required": "Required Space:",
+          "free": "Available Space:",
+          "sameDisk": "(same disk)"
+        }
+      },
+      "licenses": {
+        "title": "Licenses"
+      }
+    }
+  },
+  "releaseInstall": {
+    "install": "Installation",
+    "chooseInstallFolder": "Game install folder",
+    "selectFolder": "Use this folder",
+    "space": {
+      "required": "Required Space:",
+      "free": "Available space:"
+    },
+    "cancelButton": "Cancel",
+    "installButton": "Install"
+  },
+  "releaseUninstall": {
+    "uninstalling": "Uninstall",
+    "sentence": "Are you sure you want to uninstall {releaseName}?",
+    "cancelButton": "Cancel",
+    "uninstallButton": "Uninstall"
+  },
+  "releaseView": {
+    "version": "Version {version}"
+  },
+  "releaseViewActionBar": {
+    "options": "Options",
+    "update": "Update",
+    "play": "Play",
+    "launching": "Launching…",
+    "playing": "In progress…",
+    "downloadPending": "Download pending",
+    "downloadPaused": "Download paused",
+    "downloadSpeed": "Download: {downloadSpeed}/s",
+    "repairProgress": "File Analysis:",
+    "launchDownload": "Begin Download",
+    "resume": "Resume Download",
+    "pause": "Pause",
+    "install": "Install",
+    "runningInstances": "{runningInstancesCount} instances running…",
+    "remainingSizeToDownload": "{remainingSizeToDownload} remaining to download"
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "accept": "Accept",
+    "reject": "Refuse"
+  },
+  "login": {
+    "title": "Sign in with",
+    "subtitle": "your Ankama account",
+    "login": "Account Name",
+    "password": "Password",
+    "stayLoggedIn": "Stay connected",
+    "signIn": "Sign In",
+    "cannotSignIn": "Can't log in?",
+    "signUp": "Register",
+    "support": "Visit Support"
+  },
+  "haapi": {
+    "error": {
+      "generic": "An error occurred during authentication",
+      "ban": "Banned account",
+      "blacklist": "The IP in use is blacklisted",
+      "locked": "This account is locked",
+      "deleted": "This account has been deleted",
+      "resetAnkama": "This account needs to be reset in Account Management",
+      "otpTimeFailed": "You must unlock your account using the Ankama Authenticator",
+      "securityCard": "This account requires a security card",
+      "bruteForce": "Your IP was blacklisted because of a brute-force attack",
+      "failed": "Invalid login details",
+      "partner": "The account is not authorized because of a partner's limit",
+      "invalidEmail": "You must validate your e-mail address in Account Management",
+      "notFound": "Account not found"
+    }
+  },
+  "disk": {
+    "error": {
+      "unableToGetDriveInfo": "Impossible to retrieve disk information",
+      "invalidPath": "Invalid path"
+    }
+  }
+}
